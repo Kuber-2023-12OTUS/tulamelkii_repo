@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: web-nginx
-    image: nginx:latest
+    image: tulamelki/mynweb
     volumeMounts:
     - mounthPath: /homework
       name: volume
