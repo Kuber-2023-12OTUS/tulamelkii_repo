@@ -54,159 +54,45 @@ Status:           Running
 
 IP:               10.244.0.23
 
-IPs:
-
-  IP:  10.244.0.23
-  
-Init Containers:
-
-  init-containers:
-  
-    Container ID:  docker://c22637114f518077cfc16fc8c228d01e4d1068897975d8320fd294a5cf33fd20
-    
-    Image:         busybox
-    
-    Image ID:      docker-pullable://busybox@sha256:6d9ac9237a84afe1516540f40a0fafdc86859b2141954b4d643af7066d598b74
-    
-    Port:          <none>
-    
-    Host Port:     <none>
-    
-    Command:
-    
-      sh
-      
-      -c
-      
-      wget http://www.columbia.edu/~fdc/sample.html -O /init/index.html
-      
-    State:          Terminated
-    
-      Reason:       Completed
-      
-      Exit Code:    0
-      
-      Started:      Sun, 21 Jan 2024 14:18:35 +0000
-      
-      Finished:     Sun, 21 Jan 2024 14:18:36 +0000
-      
-    Ready:          True
-    
-    Restart Count:  0
-    
-    Environment:    <none>
-    
-    Mounts:
-    
-      /init from volume (rw)
-      
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-grf2q (ro)
-      
-Containers:
-
-  web-nginx:
-  
-    Container ID:   docker://45b8284992e66f9de390e685ffc103296d77fdcf532c6345aeb669131bd06843
-    
-    Image:          tulamelki/neweng
-    
-    Image ID:       docker-pullable://tulamelki
-    
-    /neweng@sha256:aa6babc55e0ff74793b821cdef9039b40dfb77adc0767f1daac2ea1aaf85bf47
-    
-    Port:           8000/TCP
-    
-    Host Port:      0/TCP
-    
-    State:          Running
-    
-      Started:      Sun, 21 Jan 2024 14:18:37 +0000
-      
-    Ready:          True
-    
-    Restart Count:  0
-    
-    Environment:    <none>
-    
-    Mounts:
-    
-      /homework from volume (rw)
-      
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-grf2q (ro)
-      
-Conditions:
-
-  Type              Status
-  
-  Initialized       True 
-  
-  Ready             True 
-  
-  ContainersReady   True 
-  
-  PodScheduled      True 
-  
-Volumes:
-
-  volume:
-  
-    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
-    
-    Medium:     
-    
-    SizeLimit:  800Mi
-    
-  kube-api-access-grf2q:
-  
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    
-    TokenExpirationSeconds:  3607
-    
-    ConfigMapName:           kube-root-ca.crt
-    
-    ConfigMapOptional:       <nil>
-    
-    DownwardAPI:             true
-    
-QoS Class:                   BestEffort
-
-Node-Selectors:              <none>
-
-Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-                             
-Events:
-
-  Type    Reason     Age   From               Message
-  
-  ----    ------     ----  ----               -------
-  
-  Normal  Scheduled  45m   default-scheduler  Successfully assigned homework/static-web to minikube
-  
-  Normal  Pulling    45m   kubelet            Pulling image "busybox"
-  
-  Normal  Pulled     45m   kubelet            Successfully pulled image "busybox" in 1.258s (1.258s including waiting)
-  
-  Normal  Created    45m   kubelet            Created container init-containers
-  
-  Normal  Started    45m   kubelet            Started container init-containers
-  
-  Normal  Pulling    45m   kubelet            Pulling image "tulamelki/neweng"
-  
-  Normal  Pulled     45m   kubelet            Successfully pulled image "tulamelki/neweng" in 1.263s (1.263s
-  including waiting)
-  
-  Normal  Created    45m   kubelet            Created container web-nginx
-  
-  Normal  Started    45m   kubelet            Started container web-nginx
-  
 *************************************************************************************************************
+- kubectl exec -it static-web --namespace=homework  bash
 
- 
 ## Как проверить работоспособность:
- - curl http://localhost:8000
-   
+ - netstat -tuln
+         
+   Active Internet connections (only servers)
+    
+   Proto Recv-Q Send-Q Local Address           Foreign Address         State
+         
+   tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN
+        
+   tcp6       0      0 :::8000                 :::*                    LISTEN     
 
+ - curl http://localhost:8000
+ - Check init download index.html and save share volume
+ - Check page: 
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- THIS IS A COMMENT -->
+<title>Sample Web Page</title>
+<META charset="utf-8">
+<META name="viewport"
+ content="width=device-width, initial-scale=1.0">
+<style>
+blockquote { margin-left:20px; margin-right:5px }
+pre { overflow-x:auto }
+.tt { font-family:monospace }
+.nowrap { white-space:nowrap }
+.example { font-family:monospace; white-space:pre; overflow-x:auto; }
+h3 { border-top:1px solid grey }
+blockquote { margin-top:0; margin-bottom:0 }
+table.compact { border-collapse:collapse }
+table.compact th { text-align:left; background:#eeeeee }
+table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
+</style>
+</head>
+.....
+ 
 ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
