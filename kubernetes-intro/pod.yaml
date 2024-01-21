@@ -1,30 +1,29 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: static-web
-  label:
-    name: static-web
+  name: static-web              #name pod
 spec:
   containers:
-  - name: web-nginx
-    image: tulamelki/mynweb
-    volumeMounts:
-    - mounthPath: /homework
-      name: volume
+  - name: web-nginx             #name containers
+    image: tulamelki/neweng     #my image for Docker
+    lifecycle:
+      preStop:                  #run command before stop contaier
+        exec:
+          command: [ 'sh', '-c', 'rm /homework/index.html'] #del index.html
     ports:
-    - containerPort: 8000
-      targetPort: 80
-
-  initContainers:
-  - name: init-containers
-    image: busybox:latest
-    command: ['sh', '-c', 'wget'
+    - containerPort: 8000      #use port 8000 for container
     volumeMounts:
-    - mounthPath: /init
+    - mountPath: /homework     #mount share volume /homework
       name: volume
-  
+  initContainers:              #create init container
+  - name: init-containers      #name
+    image: busybox             #image busybox
+    command: ['sh', '-c', 'wget http://www.columbia.edu/~fdc/sample.html -O /init/index.html']
+    volumeMounts:              
+    - mountPath: /init         # mount share volume to /init
+      name: volume
   volumes:
-  - name: volume
+  - name: volume               # share volume for containers
     emptyDir:
       sizeLimit: 800Mi
 
