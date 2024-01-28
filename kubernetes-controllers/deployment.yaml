@@ -17,15 +17,17 @@ spec:
       labels:
         app: nginx
     spec:
+      nodeSelector:
+        homework: "true"
       containers:
       - name: nginx           
-        image: tulamelki/neweng   
+        image: tulamelki/neweng
         lifecycle:
           preStop:                  
             exec:
               command: [ 'sh', '-c', 'rm /homework/index.html'] 
         ports:
-        - containerPort: 8000   
+        - containerPort: 8000
         volumeMounts:
         - mountPath: /homework     
           name: volume
@@ -45,4 +47,3 @@ spec:
       - name: volume              
         emptyDir:
           sizeLimit: 800Mi
-
