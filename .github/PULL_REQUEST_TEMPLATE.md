@@ -1,7 +1,7 @@
 # Выполнено ДЗ №
 
  - [X] Основное ДЗ
- - [ ] Задание со *
+ - [X] Задание со *
 
 ## В процессе сделано:
  - Create manifest namespace.yaml namespace=homework
@@ -9,7 +9,7 @@
  - Create deploy 3 pods (nginx)
  - Create readiness, it check file /homework/index.html (every 4 seconds cat file)
  - Create RollingUpdate,During the update process, a maximum of 1 pod
-
+ - Create labels homework=true for node minikube and add nodeSelector - homework: "true"
 ## Как запустить проект:
  - kubectl create -f namespace.yaml
 
@@ -56,7 +56,12 @@
     MinReadySeconds:        0
 
     RollingUpdateStrategy:  1 max unavailable, 25% max surge
-
+  
+- kubectl label nodes minikube homework=true
+-  kubectl get nodes --show-labels
+   vagrant@minikube:~$ kubectl get nodes --show-labels
+    NAME       STATUS   ROLES           AGE   VERSION   LABELS
+    minikube   Ready    control-plane   29h   v1.28.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/    os=linux,homework=true,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube,kubernetes.io/os=linux,mini
 
 ## Как проверить работоспособность:
 - if i delete index.html , then status not ready
