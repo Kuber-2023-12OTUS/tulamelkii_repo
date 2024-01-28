@@ -13,49 +13,49 @@
 ## Как запустить проект:
  - kubectl create -f namespace.yaml
 
-   vagrant@minikube:~$ kubectl get namespace
+      vagrant@minikube:~$ kubectl get namespace
    
-   NAME              STATUS   AGE
+      NAME              STATUS   AGE
    
-   default           Active   27h
+      default           Active   27h
    
-   homework          Active   4m58s
+      homework          Active   4m58s
    
-   kube-node-lease   Active   27h
+      kube-node-lease   Active   27h
    
-   kube-public       Active   27h
+      kube-public       Active   27h
    
-   kube-system       Active   27h
+      kube-system       Active   27h
 
 - kubectl apply -f deployment.yaml --namespace=homework
   
-  vagrant@minikube:~$ kubectl get deploy --namespace=homework
+     vagrant@minikube:~$ kubectl get deploy --namespace=homework
 
-   NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+     NAME         READY   UP-TO-DATE   AVAILABLE   AGE
 
-   web-deploy   3/3     3            3           2m2s
+     web-deploy   3/3     3            3           2m2s
   
 - vagrant@minikube:~$ kubectl describe deploy --namespace=homework
   
-Name:                   web-deploy
+    Name:                   web-deploy
 
-Namespace:              homework
+    Namespace:              homework
 
-CreationTimestamp:      Sun, 28 Jan 2024 21:11:11 +0000
+    CreationTimestamp:      Sun, 28 Jan 2024 21:11:11 +0000
 
-Labels:                 <none>
+    Labels:                 <none>
 
-Annotations:            deployment.kubernetes.io/revision: 1
+    Annotations:            deployment.kubernetes.io/revision: 1
 
-Selector:               app=nginx
+    Selector:               app=nginx
 
-Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+    Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
 
-StrategyType:           RollingUpdate
+    StrategyType:           RollingUpdate
 
-MinReadySeconds:        0
+    MinReadySeconds:        0
 
-RollingUpdateStrategy:  1 max unavailable, 25% max surge
+    RollingUpdateStrategy:  1 max unavailable, 25% max surge
 
 
 ## Как проверить работоспособность:
