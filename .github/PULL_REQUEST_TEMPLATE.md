@@ -66,19 +66,17 @@
 ## Как проверить работоспособность:
 - if i delete index.html , then status not ready
   
+   vagrant@minikube:~$ kubectl get pods --namespace=homework
+
+   NAME            READY   STATUS    RESTARTS      AGE
+
+   web-deploy-5dc   0/1     Running     0           26m
+
+   web-deploy-5dc   1/1     Running     0           26m
+
+   web-deploy-5dcf  1/1     Running      0          26m
+
 - i have 1 node minikube and i don't check create or not pod with lables homework=true
-
-vagrant@minikube:~$ kubectl get pods --namespace=homework
-
-NAME            READY   STATUS    RESTARTS      AGE
-
-web-deploy-5dc   0/1     Running     0           26m
-
-web-deploy-5dc   1/1     Running     0           26m
-
-web-deploy-5dcf  1/1     Running      0          26m
-
-
 
 ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
