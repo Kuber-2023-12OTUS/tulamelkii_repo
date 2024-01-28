@@ -65,6 +65,8 @@
 
 ## Как проверить работоспособность:
 - if i delete index.html , then status not ready
+  
+- i have 1 node minikube and i don't check create or not pod with lables homework=true
 
 vagrant@minikube:~$ kubectl get pods --namespace=homework
 
