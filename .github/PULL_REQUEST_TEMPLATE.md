@@ -1,11 +1,14 @@
 # Выполнено ДЗ №
 
- - [ ] Основное ДЗ
+ - [X] Основное ДЗ
  - [ ] Задание со *
 
 ## В процессе сделано:
- - Пункт 1
- - Пункт 2
+ - Create manifest namespace.yaml namespace=homework
+ - Create deployment.yaml
+ - Create deploy 3 pods (nginx)
+ - Create readiness, it check file /homework/index.html (every 4 seconds cat file)
+ - Create RollingUpdate,During the update process, a maximum of 1 pod
 
 ## Как запустить проект:
  - Например, запустить команду X в директории Y
