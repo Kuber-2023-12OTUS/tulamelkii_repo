@@ -63,13 +63,13 @@ RollingUpdateStrategy:  1 max unavailable, 25% max surge
 
 vagrant@minikube:~$ kubectl get pods --namespace=homework
 
-NAME                          READY   STATUS    RESTARTS      AGE
+NAME            READY   STATUS    RESTARTS      AGE
 
-web-deploy-5dcfb55888-45x76   0/1     Running     0           26m
+web-deploy-5dc   0/1     Running     0           26m
 
-web-deploy-5dcfb55888-5zcg8   1/1     Running     0           26m
+web-deploy-5dc   1/1     Running     0           26m
 
-web-deploy-5dcfb55888-hh6w7   1/1     Running      0          26m
+web-deploy-5dcf  1/1     Running      0          26m
 
 
 
