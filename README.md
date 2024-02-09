@@ -6,6 +6,7 @@
  - [ ] Задание со *
 
 ## В процессе сделано:
+```
  - Created vm in yandex cloud
  - Created cluster minikube version: v1.32.0
  - Installed kubectl
@@ -16,7 +17,7 @@
    - Share volume without two containers( for web-nginx /homework and for init /init)
    - Init container download page index.html and put in share volume
  - Before close container web-nginx preStop removed index.html
-
+```
 ## Как запустить проект:
 ```
  - minikube start
