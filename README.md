@@ -16,7 +16,7 @@
     Create RollingUpdate,During the update process, a maximum of 1 pod
     Create labels homework=true for node minikube and add nodeSelector - homework: "true"
 ```
-Как запустить проект:
+## Как запустить проект:
 ```
   - kubectl create -f namespace.yaml
     vagrant@minikube:~$ kubectl get namespace
@@ -48,7 +48,7 @@
     - kubectl get nodes --show-labels
     vagrant@minikube:~$ kubectl get nodes --show-labels NAME STATUS ROLES AGE VERSION LABELS minikube Ready control-plane 29h v1.28.3 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/ os=linux,homework=true,kubernetes.io/arch=amd64,kubernetes.io /hostname=minikube,kubernetes.io/os=linux,mini
 ```
-Как проверить работоспособность:
+## Как проверить работоспособность:
 ```
     if i delete index.html , then status not ready
 
@@ -61,7 +61,7 @@
 
     i have 1 node minikube and i don't check create or not pod with lables homework=true
 ```
-PR checklist:
+## PR checklist:
 
     Выставлен label с темой домашнего задания
 
