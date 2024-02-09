@@ -1,6 +1,6 @@
-Задание N2 kubernetes-controllers
 
-Выполнено ДЗ №
+
+Выполнено ДЗ № 2 kubernetes-controllers
 
    [x] Основное ДЗ
    
