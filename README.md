@@ -41,23 +41,14 @@
 
 ```
 Name:             static-web
-
 Namespace:        homework
-
 Priority:         0
-
 Service Account:  default
-
 Node:             minikube/192.168.148.2
-
 Start Time:       Sun, 21 Jan 2024 14:18:33 +0000
-
 Labels:           <none>
-
 Annotations:      <none>
-
 Status:           Running
-
 IP:               10.244.0.23
 
 - kubectl exec -it static-web --namespace=homework  bash
@@ -67,11 +58,8 @@ IP:               10.244.0.23
  - netstat -tuln
          
    Active Internet connections (only servers)
-    
    Proto Recv-Q Send-Q Local Address           Foreign Address         State
-         
    tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN
-        
    tcp6       0      0 :::8000                 :::*                    LISTEN     
 
  - curl http://localhost:8000
