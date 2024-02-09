@@ -39,7 +39,7 @@
 - kubectl describe pod static-web --namespace=homework`
 ```
 
-******************************************************info on pod*******************************************  
+```
 Name:             static-web
 
 Namespace:        homework
@@ -60,10 +60,10 @@ Status:           Running
 
 IP:               10.244.0.23
 
-*************************************************************************************************************
 - kubectl exec -it static-web --namespace=homework  bash
-
+```
 ## Как проверить работоспособность:
+ ```
  - netstat -tuln
          
    Active Internet connections (only servers)
@@ -99,6 +99,6 @@ table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
 </style>
 </head>
 .....
- 
-## PR checklist:
+```
+ ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
