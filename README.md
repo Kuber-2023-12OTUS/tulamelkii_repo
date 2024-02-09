@@ -8,6 +8,7 @@
 - create readiness-probe httpGet
 - create service.yaml for ClusterIP
 - create ingress-controller
+- create minikube tunnel
 - create ingress.yaml for homework.otus
 ```
 ## Как запустить проект:
@@ -20,6 +21,14 @@
       port: 8000
   Readiness:    http-get http://:8000/index.html delay=3s timeout=1s period=4s #success=1 #failure=3
 ```
+- Create minikube tunnel
+```
+- minikube tunnel
+
+💡  Exiting due to TUNNEL_ALREADY_RUNNING: Another tunnel process is already running, terminate the existing instance to start a new one
+
+```
+
 - create service.yaml for ClusterIP
 ```
 - kubectl apply -f service.yaml 
@@ -65,7 +74,34 @@
   
 ```
 ## Как проверить работоспособность:
--
+- curl service ip
+  curl 10.104.205.177
+```
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- THIS IS A COMMENT -->
+<title>Sample Web Page</title>
+<META charset="utf-8">
+<META name="viewport"
+ content="width=device-width, initial-scale=1.0">
+<style>
+blockquote { margin-left:20px; margin-right:5px }
+pre { overflow-x:auto }
+.tt { font-family:monospace }
+.nowrap { white-space:nowrap }
+.example { font-family:monospace; white-space:pre; overflow-x:auto; }
+h3 { border-top:1px solid grey }
+blockquote { margin-top:0; margin-bottom:0 }
+table.compact { border-collapse:collapse }
+table.compact th { text-align:left; background:#eeeeee }
+table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
+</style>
+</head>
+....
+
+```
+  
 
 
 ## PR checklist:
