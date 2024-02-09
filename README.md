@@ -18,7 +18,7 @@
  - Before close container web-nginx preStop removed index.html
 
 ## Как запустить проект:
-\
+```
  - minikube start
  - kubectl cluster-info
    * Kubernetes control plane is running at https://192.168.148.2:8443
@@ -36,7 +36,8 @@
    NAME         READY   STATUS    RESTARTS   AGE
    static-web   1/1     Running   0          38m
 - kubectl describe pod static-web --namespace=homework`
-  \
+```
+
 ******************************************************info on pod*******************************************  
 Name:             static-web
 
