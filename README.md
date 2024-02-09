@@ -17,7 +17,7 @@
    - Init container download page index.html and put in share volume
  - Before close container web-nginx preStop removed index.html 
 ## Как запустить проект:
- - minikube start
+ `- minikube start
  - kubectl cluster-info
    * Kubernetes control plane is running at https://192.168.148.2:8443
    * CoreDNS is running at https://192.168.148.2:8443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
@@ -33,7 +33,7 @@
    kubectl get pods --namespace=homework
    NAME         READY   STATUS    RESTARTS   AGE
    static-web   1/1     Running   0          38m
-- kubectl describe pod static-web --namespace=homework
+- kubectl describe pod static-web --namespace=homework`
   
 ******************************************************info on pod*******************************************  
 Name:             static-web
