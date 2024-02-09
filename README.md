@@ -1,12 +1,13 @@
 
 
-Выполнено ДЗ № 2 kubernetes-controllers
+Задание N2
+
+# Выполнено ДЗ №
 
  - [X] Основное ДЗ
-   
  - [X] Задание со *
 
-В процессе сделано:
+## В процессе сделано:
 ```
     Create manifest namespace.yaml namespace=homework
     Create deployment.yaml
