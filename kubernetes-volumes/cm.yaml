@@ -1,8 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: conf-map
+  name: env-conf-map
 data:
-  organization: otus
-  homework: volume
+  organization: World
+  structure: Crazy
+  what: you prublem
 
