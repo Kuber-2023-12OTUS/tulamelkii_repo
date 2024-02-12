@@ -1,7 +1,7 @@
-# Выполнено ДЗ №
+# Выполнено ДЗ № 3
 
  - [X] Основное ДЗ
- - [ ] Задание со *
+ - [X] Задание со *
 
 ## В процессе сделано:
 ```
@@ -10,11 +10,12 @@
 - create ingress-controller
 - create minikube tunnel
 - create ingress.yaml for homework.otus
+- create redirect homework.otus
 ```
 ## Как запустить проект:
 - create raidness-probe
 ```
-- kubectl apply -f deployment.yaml -n homework
+- kubectl apply -f deployment.yaml 
   readinessProbe:
     httpGet:
       path: /index.html
@@ -42,18 +43,20 @@
  Type:              ClusterIP
  IP Family Policy:  SingleStack
  IP Families:       IPv4
- IP:                10.106.237.179
- IPs:               10.106.237.179
+ IP:                10.96.125.147
+ IPs:               10.96.125.147
  Port:              web  80/TCP
  TargetPort:        8000/TCP
- Endpoints:         <none>
+ Endpoints:         10.244.0.212:8000,10.244.0.213:8000,10.244.0.214:8000
  Session Affinity:  None
  Events:            <none>
 
-- kubectl get svc
-  NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
-  kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP   12d
-  server-nginx   ClusterIP   10.106.237.179   <none>        80/TCP    2s
+
+- kubectl get svc -o=wide
+
+ NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+ kubernetes     ClusterIP   10.96.0.1       <none>        443/TCP   12d   <none>
+ server-nginx   ClusterIP   10.96.125.147   <none>        80/TCP    98m   app=nginx
 
 ```
 - create ingress-controller
@@ -65,17 +68,34 @@
 - kubectl apply -f ingress.yaml 
 
 - kubectl get ingress
+
   NAME           CLASS   HOSTS           ADDRESS        PORTS   AGE
-  ingress-host   nginx   homework.otus   192.168.49.2   80      4h26m
+  ingress-host   nginx   homework.otus   192.168.49.2   80      6h54m
 
-- kubectl describe ingress 
-
-
+- kubectl describe ingress
+  ame:             ingress-host
+  Labels:           <none>
+  Namespace:        default
+  Address:          192.168.49.2
+  Ingress Class:    nginx
+  Default backend:  <default>
+  Rules:
+  Host           Path  Backends
+  ----           ----  --------
+  homework.otus  
+                 /                server-nginx:80 (10.244.0.212:8000,10.244.0.213:8000,10.244.0.214:8000)
+                 /homework/(.*)   server-nginx:80 (10.244.0.212:8000,10.244.0.213:8000,10.244.0.214:8000)
+  Annotations:     nginx.ingress.kubernetes.io/rewrite-target: /$1
+                 nginx.ingress.kubernetes.io/use-regex: true
+  Events:
+  Type    Reason  Age                  From                      Message
+  ----    ------  ----                 ----                      -------
+  Normal  Sync    17m (x22 over 140m)  nginx-ingress-controller  Scheduled for sync
   
 ```
 ## Как проверить работоспособность:
 - curl service ip
-  curl 10.104.205.177
+- curl 10.96.125.147
 ```
 <!DOCTYPE HTML>
 <html lang="en">
@@ -99,10 +119,29 @@ table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
 </style>
 </head>
 ....
-
 ```
-  
+- minikube ssh
+- curl http://homework.otus
+- curl -I http://homework.otus/index.html
+```
+HTTP/1.1 200 OK
+Date: Fri, 09 Feb 2024 08:07:49 GMT
+Content-Type: text/html
+Content-Length: 34974
+Connection: keep-alive
+Last-Modified: Fri, 09 Feb 2024 06:21:01 GMT
+ETag: "65c5c44d-889e"
+Accept-Ranges: bytes
 
-
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- THIS IS A COMMENT -->
+<title>Sample Web Page</title>
+<META charset="utf-8">
+<META name="viewport"
+ content="width=device-width, initial-scale=1.0">
+<style>
+```
 ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
