@@ -28,8 +28,10 @@ spec:
         ports:
         - containerPort: 8000
         volumeMounts:
-        - mountPath: /homework     
+        - mountPath: /homework
           name: volume
+        - mountPath: /homework/conf
+          name: env
         readinessProbe:
           httpGet:
             path: /index.html
@@ -44,7 +46,10 @@ spec:
         - mountPath: /init         
           name: volume
       volumes:
-      - name: volume              
-        emptyDir:
-          sizeLimit: 800Mi
+      - name: volume 
+        persistentVolumeClaim:
+           claimName: pvc-volume2     
+      - name: env
+        configMap: 
+          name: env-conf-map
 
