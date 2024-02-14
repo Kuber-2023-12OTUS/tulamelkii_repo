@@ -32,6 +32,11 @@ spec:
 - kubectl get pvc -o=wide
   pvc-volume2   Bound  pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633  4Gi  RWO  myprovision  45h  Filesystem
 
+- kubectl get pv
+  NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                 STORAGECLASS   REASON   AGE
+ pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633   4Gi        RWO            Retain           Bound    default/pvc-volume2    myprovision             45h
+ pvc-73a56c8d-51dd-4972-a937-0ec81fcbd256   2Gi        RWO            Delete           Bound    default/pvc-volume     standard                2d
+
 - kubectl describe pvc
   Name:          pvc-volume2
   Namespace:     default
@@ -80,9 +85,13 @@ volumeBindingMode: Immediate
   VolumeBindingMode:     Immediate
   Events:                <none>
 ```
-- create cm.yaml
+- create cm.yaml and mount in directory /homework/conf/file
 - this is config  new html page in configmap
 ```
+- mountPath: /homework/conf/file
+  name: env
+  subPath: file
+
 apiVersion: v1
 data:
   file: |+
@@ -110,8 +119,14 @@ metadata:
   kube-root-ca.crt   1      18d
 ```
 - create new config nginx (cmnginx.yaml)
-- this is config change preference nginx in home.conf for pods
+- this is config map mount file with new preference nginx (home.conf in pods)
 ```
+- mountPath: /etc/nginx/conf.d/home.conf
+  name: nginx
+  subPath: home.conf
+  readOnly: true
+
+
 - kubectl describe cm cmnginx
   Name:         cmnginx
   Namespace:    default
@@ -140,14 +155,67 @@ metadata:
   ====
   Events:  <none>
 
-  
+```
+- edit deploy and add PersistentVolumeClaim for container init and default container 
 
 ```
-
+  containers:
+      - name: webnginx          
+        image: tulamelki/neweng
+        lifecycle:
+          preStop:                  
+            exec:
+              command: [ 'sh', '-c', 'rm /homework/index.html'] 
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework
+          name: volume
+....
+ initContainers:         
+      - name: init-containers      
+        image: busybox             
+        command: ['sh', '-c', 'wget http://www.columbia.edu/~fdc/sample.html -O /init/index.html']
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume 
+        persistentVolumeClaim:
+           claimName: pvc-volume2 
 ```
 
-```
 ## Как проверить работоспособность:
+- check pod
+- kubectl get po (pods runing)
+```
+NAME                          READY   STATUS    RESTARTS   AGE
+web-deploy-568894b964-2xf2r   1/1     Running   0          34m
+web-deploy-568894b964-k85nt   1/1     Running   0          34m
+web-deploy-568894b964-l2dtl   1/1     Running   0          34m
+```
+- check service
+- kubectl get svc (service work)
+```
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP   18d
+server-nginx   ClusterIP   10.100.173.218   <none>        80/TCP    3h31m
+
+```
+DONT forget enable minikube tunnel!
+```
+- curl 10.100.173.218
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- THIS IS A COMMENT -->
+<title>Sample Web Page</title>
+<META charset="utf-8">
+<META name="viewport"
+```
+- check ingress
+- 
+```
 
 ```
 ## PR checklist:
