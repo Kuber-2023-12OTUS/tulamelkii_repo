@@ -238,6 +238,14 @@ NAME          STATUS   VOLUME                                     CAPACITY   ACC
 pvc-volume    Bound    pvc-73a56c8d-51dd-4972-a937-0ec81fcbd256   2Gi        RWO            standard       2d
 pvc-volume2   Bound    pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633   4Gi        RWO            myprovision    46h
 ```
+- check configmap
+- kubectl get cm
+```
+NAME               DATA   AGE
+cm                 1      54m
+cmnginx            1      53m
+kube-root-ca.crt   1      18d
+```
 - minikube ssh
 - curl http://homework.otus/
 ```
