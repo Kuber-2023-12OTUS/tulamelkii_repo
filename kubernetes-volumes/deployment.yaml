@@ -56,7 +56,7 @@ spec:
            claimName: pvc-volume2     
       - name: env
         configMap: 
-          name: file
+          name: cm
       - name: nginx
         configMap:
           name: cmnginx
