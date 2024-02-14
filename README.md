@@ -30,7 +30,7 @@ spec:
 ```
 ```
 - kubectl get pvc -o=wide
-  pvc-volume2   Bound    pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633   4Gi   RWO    myprovision    45h    Filesystem
+  pvc-volume2   Bound  pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633  4Gi  RWO  myprovision  45h  Filesystem
 
 - kubectl describe pvc
   Name:          pvc-volume2
