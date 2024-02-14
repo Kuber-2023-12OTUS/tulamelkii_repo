@@ -214,9 +214,70 @@ DONT forget enable minikube tunnel!
 <META name="viewport"
 ```
 - check ingress
-- 
+- kubectl get ingress
+```
+NAME           CLASS   HOSTS           ADDRESS        PORTS   AGE
+ingress-host   nginx   homework.otus   192.168.49.2   80      3h37m
+```
+- check storage,pv,pvc
+-  kubectl get sc
+```
+NAME                 PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+myprovision          k8s.io/minikube-hostpath   Retain          Immediate           false                  46h
+standard (default)   k8s.io/minikube-hostpath   Delete          Immediate           false                  18d
+```
+-  kubectl get pv
+```
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                 STORAGECLASS   REASON   AGE
+pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633   4Gi        RWO            Retain           Bound    default/pvc-volume2   myprovision             46h
+pvc-73a56c8d-51dd-4972-a937-0ec81fcbd256   2Gi        RWO            Delete           Bound    default/pvc-volume    standard                2d
+```
+-  kubectl get pvc
+```
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-volume    Bound    pvc-73a56c8d-51dd-4972-a937-0ec81fcbd256   2Gi        RWO            standard       2d
+pvc-volume2   Bound    pvc-5ccedf45-11a2-428f-8c29-d79bb33f2633   4Gi        RWO            myprovision    46h
+```
+- minikube ssh
+- curl http://homework.otus/
+```
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- THIS IS A COMMENT -->
+<title>Sample Web Page</title>
+<META charset="utf-8">
+<META name="viewport"
+ content="width=device-width, initial-scale=1.0">
+<style>
+```
+curl http://homework.otus/conf/file
+- my new confmap
+```
+docker@minikube:~$ curl http://homework.otus/conf/file
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>My World</title>
+  </head>
+  <body>
+    <img src="images/firefox-icon.png" alt="My test image" />
+  </body>
+</html>
+```
+```
+docker@minikube:~$ curl -I http://homework.otus/conf/file
+HTTP/1.1 200 OK
+Date: Wed, 14 Feb 2024 20:20:56 GMT
+Content-Type: application/octet-stream
+Content-Length: 260
+Connection: keep-alive
+Last-Modified: Wed, 14 Feb 2024 19:30:48 GMT
+ETag: "65cd14e8-104"
+Accept-Ranges: bytes
 ```
 
-```
 ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
