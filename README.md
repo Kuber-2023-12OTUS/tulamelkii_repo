@@ -54,7 +54,7 @@ spec:
 
 ```
 - create manifest storageClass.yaml with provisioner: k8s.io/minikube-hostpath
-- polycy reclaimPolicy Retain
+- with polycy: Retain
 ```
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
