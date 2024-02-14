@@ -80,15 +80,67 @@ volumeBindingMode: Immediate
   VolumeBindingMode:     Immediate
   Events:                <none>
 ```
-
-
+- create cm.yaml
+- this is config  new html page in configmap
 ```
+apiVersion: v1
+data:
+  file: |+
+    <!doctype html>
+    <html lang="en-US">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>My World</title>
+      </head>
+      <body>
+        <img src="images/firefox-icon.png" alt="My test image" />
+      </body>
+    </html>
 
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: cm
 
-
+- kubectl get cm
+  NAME               DATA   AGE
+  cm                 1      5m27s
+  cmnginx            1      4m54s
+  kube-root-ca.crt   1      18d
 ```
-
+- create new config nginx (cmnginx.yaml)
+- this is config change preference nginx in home.conf for pods
 ```
+- kubectl describe cm cmnginx
+  Name:         cmnginx
+  Namespace:    default
+  Labels:       <none>
+  Annotations:  <none>
+
+  Data
+  ====
+  home.conf:
+  ----
+  server {
+    listen       8000;
+    listen  [::]:8000;
+    server_name  localhost;
+
+    location / {
+        root   /homework;
+        index  index.html index.htm;
+    }
+    location /conf/file {
+        root  /homework;
+   }
+  }
+
+  BinaryData
+  ====
+  Events:  <none>
+
+  
 
 ```
 
