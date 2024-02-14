@@ -1,9 +1,6 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
   name: ingress-host
 spec:
   rules:
@@ -17,11 +14,10 @@ spec:
             name: server-nginx
             port:
               number: 80
-      - path: /homework/(.*)
+      - path: /conf/
         pathType: ImplementationSpecific
         backend:
           service:
             name: server-nginx
             port:
               number: 80
-
