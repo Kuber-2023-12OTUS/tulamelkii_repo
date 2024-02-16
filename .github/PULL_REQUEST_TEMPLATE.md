@@ -1,9 +1,10 @@
-# Выполнено ДЗ №
+# Выполнено ДЗ № 1
 
  - [X] Основное ДЗ
- - [ ] Задание со *
+ - [X] Задание со *
 
 ## В процессе сделано:
+```
  - Created vm in yandex cloud
  - Created cluster minikube version: v1.32.0
  - Installed kubectl
@@ -13,8 +14,10 @@
  - Created init container (image: busybox)
    - Share volume without two containers( for web-nginx /homework and for init /init)
    - Init container download page index.html and put in share volume
- - Before close container web-nginx preStop removed index.html 
+ - Before close container web-nginx preStop removed index.html
+```
 ## Как запустить проект:
+```
  - minikube start
  - kubectl cluster-info
    * Kubernetes control plane is running at https://192.168.148.2:8443
@@ -31,41 +34,30 @@
    kubectl get pods --namespace=homework
    NAME         READY   STATUS    RESTARTS   AGE
    static-web   1/1     Running   0          38m
-- kubectl describe pod static-web --namespace=homework
-  
-******************************************************info on pod*******************************************  
+- kubectl describe pod static-web --namespace=homework`
+```
+
+```
 Name:             static-web
-
 Namespace:        homework
-
 Priority:         0
-
 Service Account:  default
-
 Node:             minikube/192.168.148.2
-
 Start Time:       Sun, 21 Jan 2024 14:18:33 +0000
-
 Labels:           <none>
-
 Annotations:      <none>
-
 Status:           Running
-
 IP:               10.244.0.23
 
-*************************************************************************************************************
 - kubectl exec -it static-web --namespace=homework  bash
-
+```
 ## Как проверить работоспособность:
+ ```
  - netstat -tuln
          
    Active Internet connections (only servers)
-    
    Proto Recv-Q Send-Q Local Address           Foreign Address         State
-         
    tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN
-        
    tcp6       0      0 :::8000                 :::*                    LISTEN     
 
  - curl http://localhost:8000
@@ -93,6 +85,6 @@ table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
 </style>
 </head>
 .....
- 
-## PR checklist:
+```
+ ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
