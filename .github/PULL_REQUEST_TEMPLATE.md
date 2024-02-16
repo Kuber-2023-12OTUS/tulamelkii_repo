@@ -1,90 +1,158 @@
-# Выполнено ДЗ № 1
+# Выполнено ДЗ № 2 
 
  - [X] Основное ДЗ
  - [X] Задание со *
 
 ## В процессе сделано:
 ```
- - Created vm in yandex cloud
- - Created cluster minikube version: v1.32.0
- - Installed kubectl
- - Created docker image nginx : tulamelki/neweng (with port 8000 and edit config nginx)
- - Created Namespace: homework (manifest namespace.yaml)
- - Created Pod (static-web)
- - Created init container (image: busybox)
-   - Share volume without two containers( for web-nginx /homework and for init /init)
-   - Init container download page index.html and put in share volume
- - Before close container web-nginx preStop removed index.html
+    Create manifest namespace.yaml namespace=homework
+    Create deployment.yaml
+    Create deploy 3 pods (nginx)
+    Create readiness, it check file /homework/index.html (every 4 seconds cat file)
+    Create RollingUpdate,During the update process, a maximum of 1 pod
+    Create labels homework=true for node minikube and add nodeSelector - homework: "true"
 ```
+- Create manifest namespace.yaml namespace=homework
 ## Как запустить проект:
 ```
- - minikube start
- - kubectl cluster-info
-   * Kubernetes control plane is running at https://192.168.148.2:8443
-   * CoreDNS is running at https://192.168.148.2:8443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
- - kubectl create -f namespace.yaml
- - kubectl get namespace
-    NAME              STATUS   AGE
-    default           Active   8d
-  * homework          Active   5d19h
-    kube-node-lease   Active   8d
-    kube-public       Active   8d
-    kube-system       Active   8d
-- kubectl apply -f pod.yaml --namespace=homework
-   kubectl get pods --namespace=homework
-   NAME         READY   STATUS    RESTARTS   AGE
-   static-web   1/1     Running   0          38m
-- kubectl describe pod static-web --namespace=homework`
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homework
+```
+- Create manifest namespace.yaml namespace=homework
+```
+- kubectl create -f namespace.yaml
+- kubectl get namespace
+    NAME STATUS AGE
+    default Active 27h
+    homework Active 4m58s
+    kube-node-lease Active 27h
+    kube-public Active 27h
+    kube-system Active 27h
+      
+```
+- Create deployment.yaml
+```
+- kubectl apply -f deployment.yaml --namespace=homework
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      nodeSelector:
+        homework: "true"
+      containers:
+      - name: nginx           
+        image: tulamelki/neweng
+        lifecycle:
+          preStop:                  
+            exec:
+              command: [ 'sh', '-c', 'rm /homework/index.html'] 
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework     
+          name: volume
+        readinessProbe:
+          exec:
+            command: ['sh', '-c', 'cat /homework/index.html']
+          initialDelaySeconds: 7
+          periodSeconds: 4
+      initContainers:         
+      - name: init-containers      
+        image: busybox             
+        command: ['sh', '-c', 'wget http://www.columbia.edu/~fdc/sample.html -O /init/index.html']
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume              
+        emptyDir:
+          sizeLimit: 800Mi
+```
+- Create deploy 3 pods (nginx)
 ```
 
+    - kubectl get deploy --namespace=homework
+      NAME READY UP-TO-DATE AVAILABLE AGE
+      web-deploy 3/3 3 3 2m2s
+    - kubectl describe deploy --namespace=homework
+      Name: web-deploy
+      Namespace: homework
+      CreationTimestamp: Sun, 28 Jan 2024 21:11:11 +0000
+      Labels:
+      Annotations: deployment.kubernetes.io/revision: 1
+      Selector: app=nginx
+      Replicas: 3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+      StrategyType: RollingUpdate
+      MinReadySeconds: 0
+      RollingUpdateStrategy: 1 max unavailable, 25% max surge
 ```
-Name:             static-web
-Namespace:        homework
-Priority:         0
-Service Account:  default
-Node:             minikube/192.168.148.2
-Start Time:       Sun, 21 Jan 2024 14:18:33 +0000
-Labels:           <none>
-Annotations:      <none>
-Status:           Running
-IP:               10.244.0.23
+- Create readiness, it check file /homework/index.html
 
-- kubectl exec -it static-web --namespace=homework  bash
+```
+readinessProbe:
+  exec:
+    command: ['sh', '-c', 'cat /homework/index.html']
+  initialDelaySeconds: 7
+  periodSeconds: 4
+```
+- Create RollingUpdate,During the update process, a maximum of 1 pod
+```
+strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+```
+- Create labels homework=true for node minikube and add nodeSelector - homework: "true"
+```
+    - kubectl label nodes minikube homework=true
+    - kubectl get nodes --show-labels
+    NAME STATUS ROLES AGE VERSION LABELS minikube Ready control-plane 29h v1.28.3 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/ os=linux,homework=true,kubernetes.io/arch=amd64,kubernetes.io /hostname=minikube,kubernetes.io/os=linux,mini
 ```
 ## Как проверить работоспособность:
- ```
- - netstat -tuln
-         
-   Active Internet connections (only servers)
-   Proto Recv-Q Send-Q Local Address           Foreign Address         State
-   tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN
-   tcp6       0      0 :::8000                 :::*                    LISTEN     
 
- - curl http://localhost:8000
- - Check init download index.html and save share volume
- - Check page: 
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-<!-- THIS IS A COMMENT -->
-<title>Sample Web Page</title>
-<META charset="utf-8">
-<META name="viewport"
- content="width=device-width, initial-scale=1.0">
-<style>
-blockquote { margin-left:20px; margin-right:5px }
-pre { overflow-x:auto }
-.tt { font-family:monospace }
-.nowrap { white-space:nowrap }
-.example { font-family:monospace; white-space:pre; overflow-x:auto; }
-h3 { border-top:1px solid grey }
-blockquote { margin-top:0; margin-bottom:0 }
-table.compact { border-collapse:collapse }
-table.compact th { text-align:left; background:#eeeeee }
-table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
-</style>
-</head>
-.....
+- if i delete file index.html , then status not read and raidness policy work
+- kubectl get pods --namespace=homework
 ```
- ## PR checklist:
- - [ ] Выставлен label с темой домашнего задания
+    NAME READY STATUS RESTARTS AGE
+    web-deploy-5dc 0/1 Running 0 26m
+    web-deploy-5dc 1/1 Running 0 26m
+    web-deploy-5dcf 1/1 Running 0 26m
+```
+- kubectl describe deploy --namespace=homework
+```
+      Name: web-deploy
+      Namespace: homework
+      CreationTimestamp: Sun, 28 Jan 2024 21:11:11 +0000
+      Labels:
+      Annotations: deployment.kubernetes.io/revision: 1
+      Selector: app=nginx
+      Replicas: 3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+      StrategyType: RollingUpdate
+      MinReadySeconds: 0
+      RollingUpdateStrategy: 1 max unavailable, 25% max surge
+```
+ - i have 1 node minikube and i don't check create or not pod with lables homework=true
+
+## PR checklist:
+
+    Выставлен label с темой домашнего задания
+
+
