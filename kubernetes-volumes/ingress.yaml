@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-host
+spec:
+  rules:
+  - host: homework.otus
+    http: 
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: server-nginx
+            port:
+              number: 80
+      - path: /conf/
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: server-nginx
+            port:
+              number: 80
