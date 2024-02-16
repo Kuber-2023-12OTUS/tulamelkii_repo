@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      nodeSelector:
+        homework: "true"
+      containers:
+      - name: nginx           
+        image: tulamelki/neweng
+        lifecycle:
+          preStop:                  
+            exec:
+              command: [ 'sh', '-c', 'rm /homework/index.html'] 
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework     
+          name: volume
+        readinessProbe:
+          exec:
+            command: ['sh', '-c', 'cat /homework/index.html']
+          initialDelaySeconds: 7
+          periodSeconds: 4
+      initContainers:         
+      - name: init-containers      
+        image: busybox             
+        command: ['sh', '-c', 'wget http://www.columbia.edu/~fdc/sample.html -O /init/index.html']
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume              
+        emptyDir:
+          sizeLimit: 800Mi

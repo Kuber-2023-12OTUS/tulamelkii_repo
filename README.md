@@ -88,3 +88,4 @@ table.compact td,th { padding:0 4px 0 8px; border:1px solid grey }
 ```
  ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
+
