@@ -24,21 +24,22 @@ kind: Namespace
 metadata:
   name: homework
 ```
+- Create manifest namespace.yaml namespace=homework
 ```
-  - kubectl create -f namespace.yaml
-    vagrant@minikube:~$ kubectl get namespace
+- kubectl create -f namespace.yaml
+- kubectl get namespace
     NAME STATUS AGE
     default Active 27h
     homework Active 4m58s
     kube-node-lease Active 27h
     kube-public Active 27h
     kube-system Active 27h
-
-   - kubectl apply -f deployment.yaml --namespace=homework
       
 ```
 - Create deployment.yaml
 ```
+- kubectl apply -f deployment.yaml --namespace=homework
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
