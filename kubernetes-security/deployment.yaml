@@ -18,15 +18,13 @@ spec:
         app: nginx
     spec:
       serviceAccountName: monitoring
-      nodeSelector:
-        homework: "true"
       containers:
       - name: webnginx          
         image: tulamelki/neweng
         lifecycle:
-          preStop:                  
+          preStop:
             exec:
-              command: [ 'sh', '-c', 'rm /homework/index.html'] 
+              command: ['sh', '-c', 'rm /homework/metrics.html']
         ports:
         - containerPort: 8000
         volumeMounts:
@@ -41,17 +39,20 @@ spec:
           readOnly: true
         readinessProbe:
           httpGet:
-            path: /index.html
+            path: /metrics.html
             port: 8000
           initialDelaySeconds: 3
           periodSeconds: 4
-      initContainers:         
+      initContainers: 
       - name: init-containers      
         image: curlimages/curl
-        command:
-        - sh
-        - -c
-        - ' curl https://192.168.49.2:8443/metrics -k > /init/index.html'
+        command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: token
         volumeMounts:
         - mountPath: /init         
           name: volume

@@ -22,7 +22,7 @@ spec:
             name: server-nginx
             port:
               number: 80
-      - path: /metrics
+      - path: /metrics.html
         pathType: ImplementationSpecific
         backend:
           service: 
