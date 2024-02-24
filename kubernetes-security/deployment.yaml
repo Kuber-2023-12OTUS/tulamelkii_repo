@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  namespace: homework
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccountName: monitoring
+      nodeSelector:
+        homework: "true"
+      containers:
+      - name: webnginx          
+        image: tulamelki/neweng
+        lifecycle:
+          preStop:                  
+            exec:
+              command: [ 'sh', '-c', 'rm /homework/index.html'] 
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework
+          name: volume
+        - mountPath: /homework/conf/file
+          name: env
+          subPath: file
+        - mountPath: /etc/nginx/conf.d/home.conf
+          name: nginx
+          subPath: home.conf
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /index.html
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 4
+      initContainers:         
+      - name: init-containers      
+        image: curlimages/curl
+        command:
+        - sh
+        - -c
+        - ' curl https://192.168.49.2:8443/metrics -k > /init/index.html'
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume 
+        persistentVolumeClaim:
+           claimName: pvc-volume2     
+      - name: env
+        configMap: 
+          name: cm
+      - name: nginx
+        configMap:
+          name: cmnginx
+

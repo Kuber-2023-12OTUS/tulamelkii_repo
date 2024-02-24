@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  home.conf: "server {\n    listen       8000;\n    listen  [::]:8000;\n    server_name
+    \ localhost;\n\n    location / {\n        root   /homework;\n        index  index.html
+    index.htm;\n    }\n    location /conf/file {\n        root  /homework;\n }\n}\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: cmnginx
+  namespace: homework
