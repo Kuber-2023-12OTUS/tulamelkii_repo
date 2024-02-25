@@ -776,7 +776,7 @@ roleRef:
       containers:
 ```
 - edit deployment and download metrics in pods
-- First we must create secret for sa monitoring
+- first we must create secret for sa monitoring
 - this is secrcret create token automatically
 ```
 apiVersion: v1
