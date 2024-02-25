@@ -30,9 +30,6 @@ spec:
         volumeMounts:
         - mountPath: /homework
           name: volume
-        - mountPath: /homework/conf/file
-          name: env
-          subPath: file
         - mountPath: /etc/nginx/conf.d/home.conf
           name: nginx
           subPath: home.conf
@@ -60,9 +57,6 @@ spec:
       - name: volume 
         persistentVolumeClaim:
            claimName: pvc-volume2     
-      - name: env
-        configMap: 
-          name: cm
       - name: nginx
         configMap:
           name: cmnginx
