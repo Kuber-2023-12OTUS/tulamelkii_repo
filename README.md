@@ -690,6 +690,30 @@ Accept-Ranges: bytes
 
 ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
+# Выполнено ДЗ № 5
+
+ - [X] Основное ДЗ
+ - [X] Задание со *
+
+## В процессе сделано:
+- create service account monitoring and add access for endpoint /metrics
+- edit manifest deployment and pods started with service account monitoring
+- create service account in namespace homework and add access admin
+- change kubeconfig for service account cd
+- generate token for sa cd on the 1 hour
+- edit deployment and download metrics in pods
+- save this metrics in file metrics.html
+-  show metrics with endpoint  /metrics.html
+## Как запустить проект:
+
+
+## Как проверить работоспособность:
+
+
+## PR checklist:
+
+    Выставлен label с темой домашнего задания
+
 
 
 
