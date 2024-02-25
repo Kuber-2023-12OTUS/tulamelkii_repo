@@ -975,15 +975,47 @@ roleRef:
     name: RoleCd
     apiGroup: rbac.authorization.k8s.io
 ```
-- change kubeconfig
+- create token for sa scd feb 25 2025 -> sun feb 26 2024
 ```
-
-
-
-
-  
+kubectl create token scd --namespace homework --duration 24h >> token
+https://jwt.io/
+{
+  "aud": [
+    "https://kubernetes.default.svc.cluster.local"
+  ],
+  "exp": 1708980704,
+  "iat": 1708894304,
+  "iss": "https://kubernetes.default.svc.cluster.local",
+  "kubernetes.io": {
+    "namespace": "homework",
+    "serviceaccount": {
+      "name": "scd",
+      "uid": "31520227-a74c-410d-9a42-2ef819e43339"
+    }
+  },
+  "nbf": 1708894304,
+  "sub": "system:serviceaccount:homework:scd"
+}
+```
+- change kubeconfig and add user scd
+```
+- kubectl config set-credentials scd--token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjJlUmM3REF4NWVZZ1c2cUhoZDNaRzBkM....
+  User "scd" set.
+```
+create context for user scd
+```
+- kubectl config set-context contextSCD --cluster=minicube --user=scd
+  Context "contextSCD" created.
+```
+***  examle use default context
+- kubectl config use-context <user_name>
+*** example delete user from config
+  kubectl config unset users.<user_name>
+*** example delete context rom config
+- kubectl config unset contexts.<context_name>
 
 ## Как проверить работоспособность:
+
 
 
 ## PR checklist:
