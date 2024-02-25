@@ -698,14 +698,150 @@ Accept-Ranges: bytes
 ## В процессе сделано:
 - create service account monitoring and add access for endpoint /metrics
 - edit manifest deployment and pods started with service account monitoring
-- create service account in namespace homework and add access admin
-- change kubeconfig for service account cd
-- generate token for sa cd on the 1 hour
 - edit deployment and download metrics in pods
 - save this metrics in file metrics.html
--  show metrics with endpoint  /metrics.html
-## Как запустить проект:
+- show metrics with endpoint  /metrics.html
+- create service account cd in namespace homework and add access admin
+- change kubeconfig for service account cd
+- generate token for sa cd on the 1 hour
 
+## Как запустить проект:
+- create service account monitoring
+- first create service account
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: monitoring
+  namespace: homework
+```
+- second create role for sa monitoring
+- add access for endpoint /metrics
+- add access for launching pods ["create","watch","delete","update","list"]
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rmonitoring
+  namespace: homework
+rules:
+  - apiGroups: [""]
+    resources: ["nodes/metrics"]
+    verbs: ["get", "list"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: [ "get"]
+
+  - apiGroups: [""]
+    resources: ["pod"]
+    verbs: ["create","watch","delete","update","list"]
+```
+- third combine service account + role (this combine rolebinding)
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: RBmonitoring
+  namespace: homework
+subjects:
+  - kind: ServiceAccount
+    name: monitoring
+    namespace: homework
+roleRef:
+  kind: ClusterRole
+  name: rmonitoring
+  apiGroup: rbac.authorization.k8s.io
+```
+- edit manifest deployment and pods started with service account monitoring
+```
+   spec:
+      serviceAccountName: monitoring
+      containers:
+```
+- edit deployment and download metrics in pods
+- First we must create secret for sa monitoring
+- this is secrcret create token automatically
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+  namespace: homework
+  annotations:
+    kubernetes.io/service-account.name: monitoring
+type: kubernetes.io/service-account-token
+```
+- second us need forward this token in pods
+- edit the deployment and add env to the initialization container with the token
+```
+env:
+  - name: TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: mysecret
+        key: token
+```
+- download metrics in pods
+- i pull new docker container curlimages/curl
+- save this metrics in file metrics.html
+- this command is for download, but if the account is not authorized, we have problems and cannot load the metrics
+```
+command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+```
+- show metrics with endpoint  /metrics.html
+- first i change configmap nginx
+```
+- kubectl describe cm cmnginx -n homework
+Name:         cmnginx
+Namespace:    homework
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+home.conf:
+----
+server {
+    listen       8000;
+    listen  [::]:8000;
+    server_name  localhost;
+
+    location = /metrics.html {
+        root   /homework;
+        index  metrics.html metrics.htm;
+    }
+ 
+}
+
+
+BinaryData
+====
+
+Events:  <none>
+```
+- second change preference ingress
+```
+- kubectl describe ingress -n homework
+
+Name:             ingress-host
+Labels:           <none>
+Namespace:        homework
+Address:          192.168.49.2
+Ingress Class:    <none>
+Default backend:  <default>
+Rules:
+  Host           Path  Backends
+  ----           ----  --------
+  homework.otus  
+                 /metrics.html   server-nginx:80 (10.244.0.140:8000,10.244.0.141:8000,10.244.0.142:8000)
+Annotations:     <none>
+Events:          <none>
+```
+
+
+
+
+
+  
 
 ## Как проверить работоспособность:
 
