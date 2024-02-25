@@ -743,8 +743,8 @@ rules:
 ...
 - kubectl get clusterrole -n homework
 
-  NAME                                                                   CREATED AT
-  rmonitoring                                                            2024-02-24T10:22:34Z
+  NAME                     CREATED AT
+  rmonitoring              2024-02-24T10:22:34Z
 
 ```
 - third combine service account + role (this combine rolebinding)
@@ -764,7 +764,10 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 - kubectl get clusterrolebinding -n homework
-  NAME                AGE             ROLE                                                                              RBmonitoring        33h             ClusterRole/rmonitoring
+
+  NAME                                ROLE                                                                                                  AGE
+  RBmonitoring                        ClusterRole/rmonitoring                                                                               33h
+  
 ```
 - edit manifest deployment and pods started with service account monitoring
 ```
@@ -813,7 +816,6 @@ Name:         cmnginx
 Namespace:    homework
 Labels:       <none>
 Annotations:  <none>
-
 Data
 ====
 home.conf:
@@ -829,12 +831,16 @@ server {
     }
  
 }
-
-
 BinaryData
 ====
 
 Events:  <none>
+...
+- kubectl get cm cmnginx -n homework
+
+  NAME      DATA   AGE
+  cmnginx   1      8h
+
 ```
 - second change preference ingress
 ```
@@ -853,8 +859,124 @@ Rules:
                  /metrics.html   server-nginx:80 (10.244.0.140:8000,10.244.0.141:8000,10.244.0.142:8000)
 Annotations:     <none>
 Events:          <none>
-```
+...
+- kubectl get ingress ingress-host -n homework
 
+  NAME           CLASS    HOSTS           ADDRESS        PORTS   AGE
+  ingress-host   <none>   homework.otus   192.168.49.2   80      33h
+
+```
+- full deployment.yaml
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  namespace: homework
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccountName: monitoring
+      containers:
+      - name: webnginx          
+        image: tulamelki/neweng
+        lifecycle:
+          preStop:
+            exec:
+              command: ['sh', '-c', 'rm /homework/metrics.html']
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework
+          name: volume
+        - mountPath: /etc/nginx/conf.d/home.conf
+          name: nginx
+          subPath: home.conf
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /metrics.html
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 4
+      initContainers: 
+      - name: init-containers      
+        image: curlimages/curl
+        command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: token
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume 
+        persistentVolumeClaim:
+           claimName: pvc-volume2     
+      - name: nginx
+        configMap:
+          name: cmnginx
+```
+- create service account cd in namespace homework and add access admin
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scd
+  namespace: homework
+...
+- kubectl get sa scd -n homework
+  NAME   SECRETS   AGE
+  scd    0         33h
+```
+- create role for cd
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: RoleCd
+  namespace: homework
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs:     ["*"]
+...
+- kubectl get role -n homework
+  NAME     CREATED AT
+  RoleCd   2024-02-24T10:22:34Z
+```
+- create rolebinding for cd
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: RBcd
+  namespace: homework
+subjects:
+  - kind: ServiceAccount
+    name: scd
+    namespace: homework
+roleRef:
+    kind: Role
+    name: RoleCd
+    apiGroup: rbac.authorization.k8s.io
+```
+- change kubeconfig
+```
 
 
 
