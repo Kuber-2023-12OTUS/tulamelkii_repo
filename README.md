@@ -706,7 +706,7 @@ Accept-Ranges: bytes
 - generate token for sa cd on the 1 hour
 
 ## Как запустить проект:
-- create service account monitoring
+- create manifest for service account monitoring
 - first create service account
 ```
 apiVersion: v1
@@ -714,6 +714,12 @@ kind: ServiceAccount
 metadata:
   name: monitoring
   namespace: homework
+...
+- kubectl get sa monitoring -n homework
+
+   NAME         SECRETS   AGE
+   monitoring   0         33h
+
 ```
 - second create role for sa monitoring
 - add access for endpoint /metrics
@@ -734,6 +740,12 @@ rules:
   - apiGroups: [""]
     resources: ["pod"]
     verbs: ["create","watch","delete","update","list"]
+...
+- kubectl get clusterrole -n homework
+
+  NAME                                                                   CREATED AT
+  rmonitoring                                                            2024-02-24T10:22:34Z
+
 ```
 - third combine service account + role (this combine rolebinding)
 ```
@@ -750,6 +762,9 @@ roleRef:
   kind: ClusterRole
   name: rmonitoring
   apiGroup: rbac.authorization.k8s.io
+
+- kubectl get clusterrolebinding -n homework
+  NAME                AGE             ROLE                                                                              RBmonitoring        33h             ClusterRole/rmonitoring
 ```
 - edit manifest deployment and pods started with service account monitoring
 ```
@@ -769,6 +784,9 @@ metadata:
   annotations:
     kubernetes.io/service-account.name: monitoring
 type: kubernetes.io/service-account-token
+- kubectl get secret -n homework
+  NAME       TYPE                                  DATA   AGE
+  mysecret   kubernetes.io/service-account-token   3      33h
 ```
 - second us need forward this token in pods
 - edit the deployment and add env to the initialization container with the token
