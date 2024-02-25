@@ -1015,8 +1015,90 @@ create context for user scd
 - kubectl config unset contexts.<context_name>
 
 ## Как проверить работоспособность:
-
-
+- kubectl get sa monitoring -n homework
+```
+ NAME         SECRETS   AGE
+ monitoring   0         33h
+```
+- kubectl get clusterrole -n homework
+```
+NAME                     CREATED AT
+rmonitoring              2024-02-24T10:22:34Z
+```
+- kubectl get clusterrolebinding -n homework
+```
+NAME                                ROLE                                                                                                  AGE
+  RBmonitoring                        ClusterRole/rmonitoring  
+```
+- kubectl get secret -n homework
+```
+ NAME       TYPE                                  DATA   AGE
+ mysecret   kubernetes.io/service-account-token   3      33h
+```
+- kubectl get cm cmnginx -n homework
+```
+NAME      DATA   AGE
+cmnginx   1      8h
+```
+- kubectl get ingress ingress-host -n homework
+```
+NAME           CLASS    HOSTS           ADDRESS        PORTS   AGE
+ingress-host   <none>   homework.otus   192.168.49.2   80      33h
+```
+- kubectl get svc -n homework
+```
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+server-nginx   ClusterIP   10.108.178.242   <none>        80/TCP    22h
+```
+- kubectl get sc -n homework
+```
+NAME                 PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+myprovision          k8s.io/minikube-hostpath   Retain          Immediate           false     
+```
+- kubectl get pvc -n homework
+```
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-volume2   Bound    pvc-11112082-97d4-4ee6-b366-3b88c5e152ff   4Gi        RWO            myprovision    35h
+```
+- kubectl get po -n homework
+```
+NAME                        READY   STATUS    RESTARTS   AGE
+web-deploy-cf5986b7-5b9gg   1/1     Running   0          10h
+web-deploy-cf5986b7-scj78   1/1     Running   0          10h
+web-deploy-cf5986b7-xczd5   1/1     Running   0          10h
+```
+- curl http://homework.otus/metrics
+```
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.001"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.01"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="10"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="+Inf"} 315
+workqueue_work_duration_seconds_sum{name="APIServiceRegistrationController"} 0.0020561219999999996
+workqueue_work_duration_seconds_count{name="APIServiceRegistrationController"} 315
+workqueue_work_duration_seconds_bucket{name="AvailableConditionController",le="1e-08"} 0
+```
+- kubectl config view 
+```
+contexts:
+- context:
+    cluster: minicube
+    user: scd
+  name: contextSCD
+....
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/vagrant/.minikube/profiles/minikube/client.crt
+    client-key: /home/vagrant/.minikube/profiles/minikube/client.key
+- name: scd
+  user:
+    token: REDACTED
+```
+user created and token add
 
 ## PR checklist:
 
