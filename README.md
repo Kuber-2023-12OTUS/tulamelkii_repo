@@ -690,6 +690,420 @@ Accept-Ranges: bytes
 
 ## PR checklist:
  - [ ] Выставлен label с темой домашнего задания
+# Выполнено ДЗ № 5
+
+ - [X] Основное ДЗ
+ - [X] Задание со *
+
+## В процессе сделано:
+- create service account monitoring and add access for endpoint /metrics
+- edit manifest deployment and pods started with service account monitoring
+- edit deployment and download metrics in pods
+- save this metrics in file metrics.html
+- show metrics with endpoint  /metrics.html
+- create service account cd in namespace homework and add access admin
+- change kubeconfig for service account cd
+- generate token for sa cd on the 1 hour
+
+## Как запустить проект:
+- create manifest for service account monitoring
+- first create service account
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: monitoring
+  namespace: homework
+...
+- kubectl get sa monitoring -n homework
+
+   NAME         SECRETS   AGE
+   monitoring   0         33h
+
+```
+- second create role for sa monitoring
+- add access for endpoint /metrics
+- add access for launching pods ["create","watch","delete","update","list"]
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rmonitoring
+  namespace: homework
+rules:
+  - apiGroups: [""]
+    resources: ["nodes/metrics"]
+    verbs: ["get", "list"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: [ "get"]
+
+  - apiGroups: [""]
+    resources: ["pod"]
+    verbs: ["create","watch","delete","update","list"]
+...
+- kubectl get clusterrole -n homework
+
+  NAME                     CREATED AT
+  rmonitoring              2024-02-24T10:22:34Z
+
+```
+- third combine service account + role (this combine rolebinding)
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: RBmonitoring
+  namespace: homework
+subjects:
+  - kind: ServiceAccount
+    name: monitoring
+    namespace: homework
+roleRef:
+  kind: ClusterRole
+  name: rmonitoring
+  apiGroup: rbac.authorization.k8s.io
+
+- kubectl get clusterrolebinding -n homework
+
+  NAME                                ROLE                                                                                                  AGE
+  RBmonitoring                        ClusterRole/rmonitoring                                                                               33h
+  
+```
+- edit manifest deployment and pods started with service account monitoring
+```
+   spec:
+      serviceAccountName: monitoring
+      containers:
+```
+- edit deployment and download metrics in pods
+- first we must create secret for sa monitoring
+- this is secrcret create token automatically
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+  namespace: homework
+  annotations:
+    kubernetes.io/service-account.name: monitoring
+type: kubernetes.io/service-account-token
+- kubectl get secret -n homework
+  NAME       TYPE                                  DATA   AGE
+  mysecret   kubernetes.io/service-account-token   3      33h
+```
+- second us need forward this token in pods
+- edit the deployment and add env to the initialization container with the token
+```
+env:
+  - name: TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: mysecret
+        key: token
+```
+- download metrics in pods
+- i pull new docker container curlimages/curl
+- save this metrics in file metrics.html
+- this command is for download, but if the account is not authorized, we have problems and cannot load the metrics
+```
+command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+```
+- show metrics with endpoint  /metrics.html
+- first i change configmap nginx
+```
+- kubectl describe cm cmnginx -n homework
+Name:         cmnginx
+Namespace:    homework
+Labels:       <none>
+Annotations:  <none>
+Data
+====
+home.conf:
+----
+server {
+    listen       8000;
+    listen  [::]:8000;
+    server_name  localhost;
+
+    location = /metrics.html {
+        root   /homework;
+        index  metrics.html metrics.htm;
+    }
+ 
+}
+BinaryData
+====
+
+Events:  <none>
+...
+- kubectl get cm cmnginx -n homework
+
+  NAME      DATA   AGE
+  cmnginx   1      8h
+
+```
+- second change preference ingress
+```
+- kubectl describe ingress -n homework
+
+Name:             ingress-host
+Labels:           <none>
+Namespace:        homework
+Address:          192.168.49.2
+Ingress Class:    <none>
+Default backend:  <default>
+Rules:
+  Host           Path  Backends
+  ----           ----  --------
+  homework.otus  
+                 /metrics.html   server-nginx:80 (10.244.0.140:8000,10.244.0.141:8000,10.244.0.142:8000)
+Annotations:     <none>
+Events:          <none>
+...
+- kubectl get ingress ingress-host -n homework
+
+  NAME           CLASS    HOSTS           ADDRESS        PORTS   AGE
+  ingress-host   <none>   homework.otus   192.168.49.2   80      33h
+
+```
+- full deployment.yaml
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  namespace: homework
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccountName: monitoring
+      containers:
+      - name: webnginx          
+        image: tulamelki/neweng
+        lifecycle:
+          preStop:
+            exec:
+              command: ['sh', '-c', 'rm /homework/metrics.html']
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework
+          name: volume
+        - mountPath: /etc/nginx/conf.d/home.conf
+          name: nginx
+          subPath: home.conf
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /metrics.html
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 4
+      initContainers: 
+      - name: init-containers      
+        image: curlimages/curl
+        command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: token
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume 
+        persistentVolumeClaim:
+           claimName: pvc-volume2     
+      - name: nginx
+        configMap:
+          name: cmnginx
+```
+- create service account cd in namespace homework and add access admin
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scd
+  namespace: homework
+...
+- kubectl get sa scd -n homework
+  NAME   SECRETS   AGE
+  scd    0         33h
+```
+- create role for cd
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: RoleCd
+  namespace: homework
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs:     ["*"]
+...
+- kubectl get role -n homework
+  NAME     CREATED AT
+  RoleCd   2024-02-24T10:22:34Z
+```
+- create rolebinding for cd
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: RBcd
+  namespace: homework
+subjects:
+  - kind: ServiceAccount
+    name: scd
+    namespace: homework
+roleRef:
+    kind: Role
+    name: RoleCd
+    apiGroup: rbac.authorization.k8s.io
+```
+- create token for sa scd feb 25 2025 -> sun feb 26 2024
+```
+kubectl create token scd --namespace homework --duration 24h >> token
+https://jwt.io/
+{
+  "aud": [
+    "https://kubernetes.default.svc.cluster.local"
+  ],
+  "exp": 1708980704,
+  "iat": 1708894304,
+  "iss": "https://kubernetes.default.svc.cluster.local",
+  "kubernetes.io": {
+    "namespace": "homework",
+    "serviceaccount": {
+      "name": "scd",
+      "uid": "31520227-a74c-410d-9a42-2ef819e43339"
+    }
+  },
+  "nbf": 1708894304,
+  "sub": "system:serviceaccount:homework:scd"
+}
+```
+- change kubeconfig and add user scd
+```
+- kubectl config set-credentials scd--token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjJlUmM3REF4NWVZZ1c2cUhoZDNaRzBkM....
+  User "scd" set.
+```
+create context for user scd
+```
+- kubectl config set-context contextSCD --cluster=minicube --user=scd
+  Context "contextSCD" created.
+```
+***  examle use default context
+- kubectl config use-context <user_name>
+*** example delete user from config
+  kubectl config unset users.<user_name>
+*** example delete context rom config
+- kubectl config unset contexts.<context_name>
+
+## Как проверить работоспособность:
+- kubectl get sa monitoring -n homework
+```
+ NAME         SECRETS   AGE
+ monitoring   0         33h
+```
+- kubectl get clusterrole -n homework
+```
+NAME                     CREATED AT
+rmonitoring              2024-02-24T10:22:34Z
+```
+- kubectl get clusterrolebinding -n homework
+```
+NAME                                ROLE                                                                                                  AGE
+  RBmonitoring                        ClusterRole/rmonitoring  
+```
+- kubectl get secret -n homework
+```
+ NAME       TYPE                                  DATA   AGE
+ mysecret   kubernetes.io/service-account-token   3      33h
+```
+- kubectl get cm cmnginx -n homework
+```
+NAME      DATA   AGE
+cmnginx   1      8h
+```
+- kubectl get ingress ingress-host -n homework
+```
+NAME           CLASS    HOSTS           ADDRESS        PORTS   AGE
+ingress-host   <none>   homework.otus   192.168.49.2   80      33h
+```
+- kubectl get svc -n homework
+```
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+server-nginx   ClusterIP   10.108.178.242   <none>        80/TCP    22h
+```
+- kubectl get sc -n homework
+```
+NAME                 PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+myprovision          k8s.io/minikube-hostpath   Retain          Immediate           false     
+```
+- kubectl get pvc -n homework
+```
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-volume2   Bound    pvc-11112082-97d4-4ee6-b366-3b88c5e152ff   4Gi        RWO            myprovision    35h
+```
+- kubectl get po -n homework
+```
+NAME                        READY   STATUS    RESTARTS   AGE
+web-deploy-cf5986b7-5b9gg   1/1     Running   0          10h
+web-deploy-cf5986b7-scj78   1/1     Running   0          10h
+web-deploy-cf5986b7-xczd5   1/1     Running   0          10h
+```
+- curl http://homework.otus/metrics.html
+```
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.001"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.01"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="10"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="+Inf"} 315
+workqueue_work_duration_seconds_sum{name="APIServiceRegistrationController"} 0.0020561219999999996
+workqueue_work_duration_seconds_count{name="APIServiceRegistrationController"} 315
+workqueue_work_duration_seconds_bucket{name="AvailableConditionController",le="1e-08"} 0
+```
+- kubectl config view 
+```
+contexts:
+- context:
+    cluster: minicube
+    user: scd
+  name: contextSCD
+....
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/vagrant/.minikube/profiles/minikube/client.crt
+    client-key: /home/vagrant/.minikube/profiles/minikube/client.key
+- name: scd
+  user:
+    token: REDACTED
+```
+user created and token add
+
+## PR checklist:
+
+    Выставлен label с темой домашнего задания
+
 
 
 
