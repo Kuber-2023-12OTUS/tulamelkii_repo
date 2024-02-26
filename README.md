@@ -1067,7 +1067,7 @@ web-deploy-cf5986b7-5b9gg   1/1     Running   0          10h
 web-deploy-cf5986b7-scj78   1/1     Running   0          10h
 web-deploy-cf5986b7-xczd5   1/1     Running   0          10h
 ```
-- curl http://homework.otus/metrics
+- curl http://homework.otus/metrics.html
 ```
 workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.001"} 315
 workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.01"} 315
