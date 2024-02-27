@@ -998,20 +998,22 @@ https://jwt.io/
 }
 ```
 - change kubeconfig and add user scd
+  kubectl config set-credentials <name account> --token=<token>
 ```
-- kubectl config set-credentials scd--token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjJlUmM3REF4NWVZZ1c2cUhoZDNaRzBkM....
+- kubectl config set-credentials scd --token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjJlUmM3REF4NWVZZ1c2cUhoZDNaRzBkM....
   User "scd" set.
 ```
 create context for user scd
+kubectl config set-context <name context> --cluster=<name cluster> --user=<name account>
 ```
 - kubectl config set-context contextSCD --cluster=minicube --user=scd
   Context "contextSCD" created.
 ```
-***  examle use default context
+  *examle use default context
 - kubectl config use-context <user_name>
-*** example delete user from config
-  kubectl config unset users.<user_name>
-*** example delete context rom config
+  *example delete user from config
+-  kubectl config unset users.<user_name>
+  *example delete context rom config
 - kubectl config unset contexts.<context_name>
 
 ## Как проверить работоспособность:
