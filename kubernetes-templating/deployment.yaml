@@ -1,1 +1,62 @@
 apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name}}-{{ .Chart.Version }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.spec.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{- .Values.spec.selector.mLabels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- .Values.spec.template.label | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.specont.sa }}
+      containers:
+      - name: cont-{{ .Chart.Name}}
+        image: {{ .Values.specont.containers.images }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ['sh', '-c', 'rm /homework/metrics.html']
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /homework
+          name: volume
+        - mountPath: /etc/nginx/conf.d/home.conf
+          name: nginx
+          subPath: home.conf
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /metrics.html
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 4
+      initContainers: 
+      - name: init-containers      
+        image: curlimages/curl
+        command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+        env:
+          - name: TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: mysecret
+                key: token
+        volumeMounts:
+        - mountPath: /init         
+          name: volume
+      volumes:
+      - name: volume 
+        persistentVolumeClaim:
+           claimName: pvc-volume2     
+      - name: nginx
+        configMap:
+          name: cmnginx
