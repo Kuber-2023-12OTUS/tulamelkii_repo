@@ -24,20 +24,19 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ['sh', '-c', 'rm /homework/metrics.html']
+              command: {{ .Values.specont.containers.preStop.comand }}
         ports:
-        - containerPort: 8000
+        - containerPort: {{ .Values.specont.containers.port }}
         volumeMounts:
         - mountPath: /homework
-          name: volume
+          name: volume-{{ .Chart.Name}}
         - mountPath: /etc/nginx/conf.d/home.conf
-          name: nginx
+          name: vol-nginx-{{ .Chart.Name}}
           subPath: home.conf
-          readOnly: true
         readinessProbe:
           httpGet:
             path: /metrics.html
-            port: 8000
+            port:  {{ .Values.specont.containers.port }}
           initialDelaySeconds: 3
           periodSeconds: 4
       initContainers: 
@@ -52,11 +51,12 @@ spec:
                 key: token
         volumeMounts:
         - mountPath: /init         
-          name: volume
+          name: volume-{{ .Chart.Name}}
       volumes:
-      - name: volume 
+      - name: volume-{{ .Chart.Name}}
         persistentVolumeClaim:
            claimName: pvc-volume2     
-      - name: nginx
+      - name: vol-nginx-{{ .Chart.Name}}
         configMap:
           name: cmnginx
+ 
