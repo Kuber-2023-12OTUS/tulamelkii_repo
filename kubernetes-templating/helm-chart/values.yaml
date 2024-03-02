@@ -1,0 +1,35 @@
+namespace: homework
+
+spec:
+  replicas: 5
+  selector:
+    mLabels: 'app: nginx'
+  template:
+    label: 'app: nginx'
+
+specont:
+  sa: "monitoring"
+  containers:
+    images:
+      rep: 'tulamelki/neweng'
+      tag: 'latest'
+    preStop:
+      comand: "['sh', '-c', 'rm /homework/metrics.html']"
+    port: '8000'
+
+volumeMounts:
+  mountPath: '/homework'
+  nginxPath: '/etc/nginx/conf.d/home.conf'
+  subPath: 'home.conf'
+
+readinessProbe: true
+ 
+httpGet:
+  path: '/metrics.html'
+  initialDelaySeconds: 3
+  periodSeconds: 4
+
+initContainers:
+  image:
+    repo: 'curlimages/curl' 
+    tags: 'latest' 

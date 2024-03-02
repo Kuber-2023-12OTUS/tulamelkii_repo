@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name}}-{{ .Chart.Version }}
+  name: {{ .Chart.Name }}-{{ .Chart.Version }}
   namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.spec.replicas }}
@@ -19,8 +19,8 @@ spec:
     spec:
       serviceAccountName: {{ .Values.specont.sa }}
       containers:
-      - name: cont-{{ .Chart.Name}}
-        image: {{ .Values.specont.containers.images }}
+      - name: cont-{{ .Chart.Name }}
+        image: {{ .Values.specont.containers.images.rep }}:{{ .Values.specont.containers.images.tag }} 
         lifecycle:
           preStop:
             exec:
@@ -28,35 +28,37 @@ spec:
         ports:
         - containerPort: {{ .Values.specont.containers.port }}
         volumeMounts:
-        - mountPath: /homework
-          name: volume-{{ .Chart.Name}}
-        - mountPath: /etc/nginx/conf.d/home.conf
-          name: vol-nginx-{{ .Chart.Name}}
-          subPath: home.conf
+        - mountPath: {{ .Values.volumeMounts.mountPath }}
+          name: volume-{{ .Chart.Name }}
+        - mountPath: {{ .Values.volumeMounts.nginxPath }}
+          name: vol-nginx-{{ .Chart.Name }}
+          subPath: {{ .Values.volumeMounts.subPath }}
+        {{- if .Values.readinessProbe }}
         readinessProbe:
           httpGet:
-            path: /metrics.html
-            port:  {{ .Values.specont.containers.port }}
-          initialDelaySeconds: 3
-          periodSeconds: 4
+            path: {{ .Values.httpGet.path }}
+            port: {{ .Values.specont.containers.port }}
+          initialDelaySeconds: {{ .Values.httpGet.initialDelaySeconds }}
+          periodSeconds: {{ .Values.httpGet.periodSeconds }}
+        {{- end }}
       initContainers: 
-      - name: init-containers      
-        image: curlimages/curl
+      - name: init-cont-{{ .Chart.Name }}
+        image: {{ .Values.initContainers.image.repo }}:{{ .Values.initContainers.image.tags }}
         command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
         env:
           - name: TOKEN
             valueFrom:
               secretKeyRef:
-                name: mysecret
+                name: mysecret-{{ .Chart.Name }}
                 key: token
         volumeMounts:
         - mountPath: /init         
-          name: volume-{{ .Chart.Name}}
+          name: volume-{{ .Chart.Name }}
       volumes:
-      - name: volume-{{ .Chart.Name}}
+      - name: volume-{{ .Chart.Name }}
         persistentVolumeClaim:
            claimName: pvc-volume2     
-      - name: vol-nginx-{{ .Chart.Name}}
+      - name: vol-nginx-{{ .Chart.Name }}
         configMap:
-          name: cmnginx
- 
+          name: cmnginx-{{ .Chart.Name }}
+

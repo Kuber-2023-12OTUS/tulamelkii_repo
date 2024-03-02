@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: service-nginx-{{ .Chart.Name}}
+spec:
+  selector:
+    {{- .Values.spec.template.label | nindent 4 }}
+  ports:
+  - protocol: TCP
+    name: tcp-service-{{ .Chart.Name}}
+    port: 80
+    targetPort: 8000
