@@ -1,0 +1,84 @@
+#-------------------------------
+#values for deloyment.yaml
+#------------------------------
+
+namespace: homework
+
+#-------------------------------
+#spec and lables
+#-------------------------------
+
+spec:
+  replicas: 5
+  selector:
+    mLabels: 'app: nginx'
+  template:
+    label: 'app: nginx'
+  maxUnavailable: 1
+
+#-------------------------------
+#spec containers
+#-------------------------------
+
+specont:
+  sa: "monitoring"
+  containers:
+    images:
+      rep: 'tulamelki/neweng'
+      tag: 'latest'
+    preStop:
+      comand: "['sh', '-c', 'rm /homework/metrics.html']"
+    port: '8000'
+#-------------------------------
+#volume mounts
+#-------------------------------
+
+volumeMounts:
+  mountPath: '/homework'
+  nginxPath: '/etc/nginx/conf.d/home.conf'
+  subPath: 'home.conf'
+
+#--------------------------------
+#preference raidnessProbe on or off
+#--------------------------------
+
+readinessProbe: true
+ 
+httpGet:
+  path: '/metrics.html'
+  initialDelaySeconds: 3
+  periodSeconds: 4
+
+#---------------------------------
+#preference init container
+#---------------------------------
+
+initContainers:
+  image:
+    repo: 'curlimages/curl' 
+    tags: 'latest'
+  command: 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html'
+mountPath:
+  mount: '/init'
+
+#-------------------------------
+#ingress.yaml preference
+#-------------------------------
+
+specingress:
+  host: 'homework.otus'
+  port: 80
+
+#-----------------------------
+#pvc.yaml
+#----------------------------
+specPvc:
+  accessModes: 'ReadWriteOnce'
+  resources:
+    storage: '5Gi'
+
+#----------------------------
+#rolebinding service account 
+#---------------------------
+
+

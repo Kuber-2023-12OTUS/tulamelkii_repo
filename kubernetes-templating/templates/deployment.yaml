@@ -8,7 +8,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: {{ .Values.spec.maxUnavailable }}
   selector:
     matchLabels:
       {{- .Values.spec.selector.mLabels | nindent 6 }}
@@ -44,7 +44,7 @@ spec:
       initContainers: 
       - name: init-cont-{{ .Chart.Name }}
         image: {{ .Values.initContainers.image.repo }}:{{ .Values.initContainers.image.tags }}
-        command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html']
+        command: ["sh", "-c", '{{ .Values.initContainers.command }}' ]
         env:
           - name: TOKEN
             valueFrom:
@@ -52,7 +52,7 @@ spec:
                 name: mysecret-{{ .Chart.Name }}
                 key: token
         volumeMounts:
-        - mountPath: /init         
+        - mountPath: {{ .Values.mountPath.mount }}         
           name: volume-{{ .Chart.Name }}
       volumes:
       - name: volume-{{ .Chart.Name }}

@@ -3,5 +3,4 @@ name: helm-security
 version: "0.2"
 description: security shart for metrics
 type: application
-appVepsion: "0.2"
 home: https://github.com/tulamelkii
