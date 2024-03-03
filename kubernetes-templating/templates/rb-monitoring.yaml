@@ -1,15 +1,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: RBmonitoring
+  name: rb-monitoring-{{ .Chart.Name }}
   namespace: {{ .Values.namespace }}
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.specont.sa }}
+    name: sa-monitoring-{{ .Chart.Name }}
     namespace: {{ .Values.namespace }}
 roleRef:
   kind: ClusterRole
-  name: rmonitoring
+  name: role-monitoring-{{ .Chart.Name }}
   apiGroup: rbac.authorization.k8s.io
 
     

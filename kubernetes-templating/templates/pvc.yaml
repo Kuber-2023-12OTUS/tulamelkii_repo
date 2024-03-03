@@ -4,7 +4,7 @@ metadata:
   name: pvc-volume-{{ .Chart.Name }}
   namespace: {{ .Values.namespace }}
 spec:
-  storageClassName: pvc-{{ .Chart.Name }}
+  storageClassName: storclass-{{ .Chart.Name }}
   accessModes:
   - {{ .Values.specPvc.accessModes }}
   resources:

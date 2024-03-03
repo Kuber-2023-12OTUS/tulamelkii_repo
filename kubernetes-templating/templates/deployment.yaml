@@ -17,7 +17,7 @@ spec:
       labels:
         {{- .Values.spec.template.label | nindent 8 }}
     spec:
-      serviceAccountName: {{ .Values.specont.sa }}
+      serviceAccountName: sa-monitoring-{{ .Chart.Name }}
       containers:
       - name: cont-{{ .Chart.Name }}
         image: {{ .Values.specont.containers.images.rep }}:{{ .Values.specont.containers.images.tag }} 
@@ -57,7 +57,7 @@ spec:
       volumes:
       - name: volume-{{ .Chart.Name }}
         persistentVolumeClaim:
-           claimName: pvc-volume2     
+           claimName: pvc-volume-{{ .Chart.Name }}     
       - name: vol-nginx-{{ .Chart.Name }}
         configMap:
           name: cmnginx-{{ .Chart.Name }}

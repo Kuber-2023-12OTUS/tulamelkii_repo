@@ -21,7 +21,7 @@ spec:
 #-------------------------------
 
 specont:
-  sa: "monitoring"
+# sa: "monitoring"
   containers:
     images:
       rep: 'tulamelki/neweng'
@@ -78,7 +78,8 @@ specPvc:
     storage: '5Gi'
 
 #----------------------------
-#rolebinding service account 
-#---------------------------
+#storclass
+#----------------------------
 
-
+reclaimPolicy: 'Retain'
+volumeBindingMode: 'Immediate'

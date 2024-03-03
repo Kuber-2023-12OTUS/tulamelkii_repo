@@ -9,5 +9,5 @@ spec:
   ports:
   - protocol: TCP
     name: tcp-service-{{ .Chart.Name}}
-    port: 80
-    targetPort: 8000
+    port: {{ .Values.specingress.port }}
+    targetPort: {{ .Values.specont.containers.port }}
