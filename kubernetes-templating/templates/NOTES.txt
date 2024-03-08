@@ -1,0 +1,2 @@
+Hi,this is information about your server 
+Kubernetes control plane at https://192.168.49.2:8443 
