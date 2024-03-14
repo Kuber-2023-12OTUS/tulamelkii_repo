@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{  include "metrics.namespace" . }}
+  name: service-nginx-{{- include "metrics.name" . }}
+spec:
+  selector:
+    {{- include "metrics.labels" . | nindent 4 }}
+  ports:
+  - protocol: TCP
+    name: tcp-service-{{- include "metrics.name" . }}
+    port: {{ .Values.specingress.port }}
+    targetPort: {{ .Values.port }}

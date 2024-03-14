@@ -1,0 +1,82 @@
+#-------------------------------
+#values Override
+#------------------------------
+
+nameOverride: ''
+fullnameOverride: ''
+namespaceOverride: ''
+
+#-------------------------------
+#spec and lables
+#-------------------------------
+
+spec:
+  replicas: 5
+  maxUnavailable: 1
+
+#-------------------------------
+#spec containers
+#-------------------------------
+
+
+images:
+  tulamelki: 'tulamelki/neweng'
+  tag: 'latest'
+preStop:
+  comand: "['sh', '-c', 'rm /homework/metrics.html']"
+port: '8000'
+#-------------------------------
+#volume mounts
+#-------------------------------
+
+volumeMounts:
+  mountPath: '/homework'
+  nginxPath: '/etc/nginx/conf.d/home.conf'
+  subPath: 'home.conf'
+
+#--------------------------------
+#preference raidnessProbe on or off
+#--------------------------------
+
+readinessProbe: true
+ 
+httpGet:
+  path: '/metrics.html'
+  initialDelaySeconds: 3
+  periodSeconds: 4
+
+#---------------------------------
+#preference init container
+#---------------------------------
+
+image:
+  curlimages: 'curlimages/curl' 
+  tags: 'latest'
+
+command: 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html'
+
+mountPath:
+  mount: '/init'
+
+#-------------------------------
+#ingress.yaml preference
+#-------------------------------
+
+specingress:
+  host: 'homework.otus'
+  port: 80
+
+#-----------------------------
+#pvc.yaml
+#----------------------------
+specPvc:
+  accessModes: 'ReadWriteOnce'
+  resources:
+    storage: '5Gi'
+
+#----------------------------
+#storclass
+#----------------------------
+
+reclaimPolicy: 'Retain'
+volumeBindingMode: 'Immediate'
