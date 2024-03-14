@@ -1104,6 +1104,15 @@ user created and token add
 
     Выставлен label с темой домашнего задания
 
+# Выполнено ДЗ № 6
 
+ - [X] Основное ДЗ
+ - [ ] Задание со *
+
+## В процессе сделано:
+```
+helm install metric helm-chart/ --namespace homework --create....
+
+helm dependency build
 
 
