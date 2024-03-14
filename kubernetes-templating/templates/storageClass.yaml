@@ -1,9 +1,0 @@
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: storclass-{{ .Chart.Name }}
-  labels:
-    name: stor-retain-{{ .Chart.Name }}
-provisioner: k8s.io/minikube-hostpath
-reclaimPolicy: {{ .Values.reclaimPolicy }}
-volumeBindingMode: {{ .Values.volumeBindingMode }}
