@@ -12,7 +12,7 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service: 
-            name: service-nginx-{{- include "metrics.fullname" . }}
+            name: service-nginx-{{- include "metrics.name" . }}
             port:
               number: {{ .Values.specingress.port }}
    
