@@ -1110,9 +1110,73 @@ user created and token add
  - [ ] Задание со *
 
 ## В процессе сделано:
+
+
+
+first install ns
 ```
-helm install metric helm-chart/ --namespace homework --create....
+kubectl create ns homework
+```
+second deploy helm to namespace homework
+```
+helm install helm /tmp/helm-chart/ -n homework
+NAME: helm
+LAST DEPLOYED: Sun Jun  9 18:44:53 2024
+NAMESPACE: homework
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Hi,this is information about your server 
+Kubernetes control plane at https://192.168.49.2:8443
+http://homework.otus/metrics.html - metrics
+```
+check helm 
+```
+helm list -n homework
+NAME	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART 	APP VERSION
+helm	homework 	1       	2024-06-09 18:44:53.260208578 +0000 UTC	deployed	metr-2
+```
 
-helm dependency build
+check pods and namespace 
+- pods status runing
+```
+kubectl get pods -n homework
+NAME                              READY   STATUS    RESTARTS   AGE
+helm-memcached-569bddd748-2d6sw   1/1     Running   0          3m13s
+helm-metr-5876c66c59-5h9cr        1/1     Running   0          3m13s
+helm-metr-5876c66c59-68f7w        1/1     Running   0          3m13s
+helm-metr-5876c66c59-fgmqd        1/1     Running   0          3m13s
+helm-metr-5876c66c59-hth9f        1/1     Running   0          3m13s
+helm-metr-5876c66c59-j2bh9        1/1     Running   0          3m13s
 
+kubectl get ns
+NAME              STATUS   AGE
+default           Active   5h42m
+dev               Active   16m
+homework          Active   5h32m
+prod              Active   16m
+```
+check pv and pvc 
+```
+kubectl get pvc -n homework
+NAME            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS     VOLUMEATTRIBUTESCLASS   AGE
+pvc-helm-metr   Bound    pvc-91305702-e54b-4323-923b-d372699d8d7a   5Gi        RWO            storclass-metr   <unset>                 6m23s
+kubectl get pv -n homework
+
+pvc-91305702-e54b-4323-923b-d372699d8d7a   5Gi        RWO            Retain           Bound      homework/pvc-helm-metr                    storclass-metr   <unset>                          7m9s
+
+```
+check ingress and service
+```
+kubectl get ingress -n homework
+NAME                CLASS   HOSTS           ADDRESS        PORTS   AGE
+ingress-helm-metr   nginx   homework.otus   192.168.49.2   80      10m
+kubectl get svc -n homework
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+helm-memcached       ClusterIP   10.98.251.110   <none>        11211/TCP   10m
+service-nginx-metr   ClusterIP   10.108.205.80   <none>        80/TCP      10m
+```
+ 
 
