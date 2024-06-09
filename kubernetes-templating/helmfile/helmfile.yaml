@@ -13,7 +13,7 @@ releases:
     namespace: prod
     set:
       - name: replicaCount
-        value: 4
+        value: 5
       - name: image.tag
         value: "3.5.2"
       - name: client.protocol
