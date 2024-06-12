@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rolebinding-cd-{{- include "metrics.name" . }}
+  namespace: {{ include "metrics.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: sa-cd-{{- include "metrics.name" . }}
+    namespace: {{ include "metrics.namespace" . }}
+roleRef:
+    kind: Role
+    name: role-cd-{{- include "metrics.name" . }}
+    apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  home.conf: "server {\n    listen       8000;\n    listen  [::]:8000;\n    server_name
+    \ localhost;\n\n    location = /metrics.html {\n        root   /homework;\n        index  metrics.html
+    metrics.htm;\n    }\n \n}\n"
+kind: ConfigMap
+metadata:
+  name: cm-{{- include "metrics.fullname" . }}
+  namespace: {{ template "metrics.namespace" . }}
+  labels:
+    #    cm-{{- include "metrics.labels" . | indent 4 }}

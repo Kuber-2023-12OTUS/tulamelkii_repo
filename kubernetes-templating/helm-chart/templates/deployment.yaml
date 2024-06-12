@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "metrics.fullname" . }}
+  namespace: {{ template "metrics.namespace" . }}  
+spec:
+  replicas: {{ .Values.spec.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.spec.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "metrics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "metrics.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: sa-monitoring-{{- include "metrics.name" . }}
+      containers:
+      - name: cont-{{- include "metrics.name" . }}
+        image: {{ .Values.images.tulamelki }}:{{ .Values.images.tag }} 
+        lifecycle:
+          preStop:
+            exec:
+              command: {{ .Values.preStop.comand }}
+        ports:
+        - containerPort: {{ .Values.port }}
+        volumeMounts:
+        - mountPath: {{ .Values.volumeMounts.mountPath }}
+          name: volume-{{- include "metrics.name" . }}
+        - mountPath: {{ .Values.volumeMounts.nginxPath }}
+          name: vol-nginx-{{- include "metrics.name" . }}
+          subPath: {{ .Values.volumeMounts.subPath }}
+        {{- if .Values.readinessProbe }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.httpGet.path }}
+            port: {{ .Values.port }}
+          initialDelaySeconds: {{ .Values.httpGet.initialDelaySeconds }}
+          periodSeconds: {{ .Values.httpGet.periodSeconds }}
+        {{- end }}
+      initContainers:  
+      - name: init-{{- include "metrics.name" . }}
+        image: {{ .Values.image.curlimages }}:{{ .Values.image.tags }}
+        command: ["sh", "-c", 'curl https://192.168.49.2:8443/metrics --header "Authorization: Bearer $TOKEN" -k > /init/metrics.html' ]
+        env:
+          - name: TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: mysecret-{{- template "metrics.name" . }}
+                key: token
+        volumeMounts:
+        - mountPath: {{ .Values.mountPath.mount }}         
+          name: volume-{{- include "metrics.name" . }}
+      volumes:
+      - name: volume-{{- include "metrics.name" . }}
+        persistentVolumeClaim:
+           claimName: pvc-{{- include "metrics.fullname" . }}
+      - name: vol-nginx-{{- include "metrics.name" . }}
+        configMap:
+          name: cm-{{- include "metrics.fullname" . }}
+
+

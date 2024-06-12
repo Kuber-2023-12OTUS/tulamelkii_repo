@@ -1106,6 +1106,147 @@ user created and token add
 
     Выставлен label с темой домашнего задания
 
+# Выполнено ДЗ № 6
+
+ - [X] Основное ДЗ
+ - [ ] Задание со *
+
+## В процессе сделано:
 
 
+
+first install ns
+```
+kubectl create ns homework
+```
+second deploy helm to namespace homework
+```
+helm install helm /tmp/helm-chart/ -n homework
+NAME: helm
+LAST DEPLOYED: Sun Jun  9 18:44:53 2024
+NAMESPACE: homework
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Hi,this is information about your server 
+Kubernetes control plane at https://192.168.49.2:8443
+http://homework.otus/metrics.html - metrics
+```
+check helm 
+```
+helm list -n homework
+NAME	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART 	APP VERSION
+helm	homework 	1       	2024-06-09 18:44:53.260208578 +0000 UTC	deployed	metr-2
+```
+
+check pods and namespace 
+- pods status runing
+- i install my helm chart + plus helm-memcached
+```
+kubectl get pods -n homework
+NAME                              READY   STATUS    RESTARTS   AGE
+helm-memcached-569bddd748-2d6sw   1/1     Running   0          3m13s
+helm-metr-5876c66c59-5h9cr        1/1     Running   0          3m13s
+helm-metr-5876c66c59-68f7w        1/1     Running   0          3m13s
+helm-metr-5876c66c59-fgmqd        1/1     Running   0          3m13s
+helm-metr-5876c66c59-hth9f        1/1     Running   0          3m13s
+helm-metr-5876c66c59-j2bh9        1/1     Running   0          3m13s
+
+kubectl get ns
+NAME              STATUS   AGE
+default           Active   5h42m
+dev               Active   16m
+homework          Active   5h32m
+prod              Active   16m
+```
+check pv and pvc 
+```
+kubectl get pvc -n homework
+NAME            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS     VOLUMEATTRIBUTESCLASS   AGE
+pvc-helm-metr   Bound    pvc-91305702-e54b-4323-923b-d372699d8d7a   5Gi        RWO            storclass-metr   <unset>                 6m23s
+kubectl get pv -n homework
+
+pvc-91305702-e54b-4323-923b-d372699d8d7a   5Gi        RWO            Retain           Bound      homework/pvc-helm-metr                    storclass-metr   <unset>                          7m9s
+
+```
+check ingress and service
+```
+kubectl get ingress -n homework
+NAME                CLASS   HOSTS           ADDRESS        PORTS   AGE
+ingress-helm-metr   nginx   homework.otus   192.168.49.2   80      10m
+kubectl get svc -n homework
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+helm-memcached       ClusterIP   10.98.251.110   <none>        11211/TCP   10m
+service-nginx-metr   ClusterIP   10.108.205.80   <none>        80/TCP      10m
+```
+ - curl http://homework.otus/metrics
+```
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.001"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.01"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="10"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="+Inf"} 315
+workqueue_work_duration_seconds_sum{name="APIServiceRegistrationController"} 0.0020561219999999996
+workqueue_work_duration_seconds_count{name="APIServiceRegistrationController"} 315
+workqueue_work_duration_seconds_bucket{name="AvailableConditionController",le="1e-08"} 0
+```
+create helmfile
+```
+cat helmfile.yaml 
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+helmDefaults:
+  createNamespace: True
+  timeout: 800
+  wait: True
+
+releases: 
+  - name: kafka
+    chart: bitnami/kafka
+    namespace: prod
+    set:
+      - name: replicaCount
+        value: 1
+      - name: image.tag
+        value: "3.5.2"
+      - name: client.protocol
+        value: "SASL_PLAINTEXT"
+      - name: interbroker.protocol
+        value: "SASL_PLAINTEXT"
+  - name: dev
+    namespace: dev
+    chart: bitnami/kafka
+    set:
+      - name: image.tag
+        value: "latest"
+      - name: broker.replicaCount
+        value: 1
+      - name: listeners.client.protocol
+        value: "PLAINTEXT"
+      - name: listeners.interbroker.protocol
+        value: "PLAINTEXT"
+```
+check ns
+```
+kubectl get ns dev
+NAME   STATUS   AGE
+dev    Active   11m
+
+kubectl get ns prod
+NAME   STATUS   AGE
+prod   Active   11m
+``
+kubectl get pods -n dev
+NAME                     READY   STATUS    RESTARTS   AGE
+dev-kafka-broker-0       1/1     Running   0          12m
+dev-kafka-controller-0   1/1     Running   0          12m
+dev-kafka-controller-1   1/1     Running   0          12m
+dev-kafka-controller-2   1/1     Running   0          12
+
+```
 
