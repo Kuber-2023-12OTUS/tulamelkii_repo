@@ -1452,3 +1452,19 @@ go_memstats_buck_hash_sys_bytes 4625
 # TYPE go_memstats_frees_total counter
 go_memstats_frees_total 104518
 ```
+port forward grafana and prometheus
+```
+kubectl port-forward svc/grafana --address 0.0.0.0 3000:3000 -n monitoring
+
+Forwarding from 0.0.0.0:3000 -> 3000
+
+kubectl port-forward svc/kube-prometheus-prometheus  --address 0.0.0.0 9090:9090 -n monitoring
+
+Forwarding from 0.0.0.0:9090 -> 9090
+```
+![image](https://github.com/Kuber-2023-12OTUS/tulamelkii_repo/assets/130311206/be6f6cf6-d848-4a62-a928-066a6a0cba64)
+
+![image](https://github.com/Kuber-2023-12OTUS/tulamelkii_repo/assets/130311206/1e3a5f98-5c38-404a-847a-54ed6a845435)
+
+
+
