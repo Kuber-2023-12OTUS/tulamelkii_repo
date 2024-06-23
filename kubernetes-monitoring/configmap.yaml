@@ -15,7 +15,7 @@ data:
         root   /usr/share/nginx/html;
         index  index.html index.htm;
     }
-    
+
     location = /basic_status {
     stub_status;
     }

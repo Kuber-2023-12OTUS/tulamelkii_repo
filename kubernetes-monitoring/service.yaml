@@ -2,12 +2,17 @@ apiVersion: v1
 kind: Service
 metadata:
   name: service-metric
+  namespace: default
+  labels:
+    app: nginx
 spec:
   selector:
     app: nginx
   ports:
     - name: nginx
       port: 80
-    - name: scrape
+      targetPort: 80
+    - name: metrics
       port: 9113
-
+      targetPort: 9113
+    
