@@ -1359,4 +1359,96 @@ NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)           AGE
 kubernetes       ClusterIP   10.96.0.1      <none>        443/TCP           9h
 service-metric   ClusterIP   10.109.27.36   <none>        80/TCP,9113/TCP   7h38m
 ```
+- create service monitor
+```
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: service-monitor
+  labels:
+    app: nginx-service-monitor
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  endpoints:
+    - port: metrics
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - default
+...
+kubectl get servicemonitor
 
+NAME              AGE
+service-monitor   7h41m
+```
+create configmap for nginx
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginxconf
+  creationTimestamp: null
+data:
+ default.conf: |
+    server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    location = /basic_status {
+    stub_status;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    }
+   ```
+check
+```
+root@control:/home/vagrant# curl http://10.244.171.115/basic_status
+Active connections: 1 
+server accepts handled requests
+ 159 159 159 
+Reading: 0 Writing: 1 Waiting: 0 
+``
+curl http://10.109.27.36:9113/metrics
+
+# HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
+# TYPE go_gc_duration_seconds summary
+go_gc_duration_seconds{quantile="0"} 3.8425e-05
+go_gc_duration_seconds{quantile="0.25"} 0.000159387
+go_gc_duration_seconds{quantile="0.5"} 0.000285061
+go_gc_duration_seconds{quantile="0.75"} 0.000405764
+go_gc_duration_seconds{quantile="1"} 0.000710465
+go_gc_duration_seconds_sum 0.007525263
+go_gc_duration_seconds_count 25
+# HELP go_goroutines Number of goroutines that currently exist.
+# TYPE go_goroutines gauge
+go_goroutines 14
+# HELP go_info Information about the Go environment.
+# TYPE go_info gauge
+go_info{version="go1.21.5"} 1
+# HELP go_memstats_alloc_bytes Number of bytes allocated and still in use.
+# TYPE go_memstats_alloc_bytes gauge
+go_memstats_alloc_bytes 2.302176e+06
+# HELP go_memstats_alloc_bytes_total Total number of bytes allocated, even if freed.
+# TYPE go_memstats_alloc_bytes_total counter
+go_memstats_alloc_bytes_total 2.0265176e+07
+# HELP go_memstats_buck_hash_sys_bytes Number of bytes used by the profiling bucket hash table.
+# TYPE go_memstats_buck_hash_sys_bytes gauge
+go_memstats_buck_hash_sys_bytes 4625
+# HELP go_memstats_frees_total Total number of frees.
+# TYPE go_memstats_frees_total counter
+go_memstats_frees_total 104518
+```
