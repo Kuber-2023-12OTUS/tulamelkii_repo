@@ -1247,4 +1247,296 @@ dev-kafka-controller-1   1/1     Running   0          12m
 dev-kafka-controller-2   1/1     Running   0          12
 
 ```
+# Выполнено ДЗ № 7
 
+ - [X] Основное ДЗ
+ - [X] Задание со *
+
+## В процессе сделано:
+- pull nginx container
+- create configmap for nginx
+- install prometheus
+- create Prometheus,Grafana,kube-exporter
+- create deploy,service,configmap,nginx prometheus exporter
+
+## Как запустить проект:
+infrastrukture k8s with 3 nodes
+```
+kubectl get nodes -o wide
+NAME      STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION   CONTAINER-RUNTIME
+control   Ready    control-plane   9h    v1.29.6   192.168.2.4   <none>        Debian GNU/Linux 12 (bookworm)   6.1.0-13-amd64   cri-o://1.31.0
+worker    Ready    <none>          9h    v1.29.6   192.168.2.5   <none>        Debian GNU/Linux 12 (bookworm)   6.1.0-13-amd64   cri-o://1.31.0
+worker2   Ready    <none>          9h    v1.29.6   192.168.2.6   <none>        Debian GNU/Linux 12 (bookworm)   6.1.0-13-amd64   cri-o://1.31.0
+```
+- create deployment (nginx + nginx exporter)
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginxmetrics
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27.0
+          ports:
+            - name: nginx
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.1.0
+          args: ['--nginx.scrape-uri', 'http://127.0.0.1:80/metrics']
+          ports:
+            - name: metrics
+              containerPort: 9113
+              protocol: TCP
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginxconf
+
+
+kubectl get pods
+NAME                            READY   STATUS    RESTARTS   AGE
+nginxmetrics-7fdc6cc6b7-pt5nx   2/2     Running   0          47m
+```
+install helm and add repo bitnami
+```
+helm repo list
+NAME    	URL                               
+traefik 	https://traefik.github.io/charts  
+longhorn	https://charts.longhorn.io        
+bitnami 	https://charts.bitnami.com/bitnami
+```
+install helm chart 
+```
+helm list -n monitoring
+NAME           	NAMESPACE 	REVISION	UPDATED                                	STATUS  CHART                	APP VERSION
+grafana        	monitoring	1       	2024-06-23 13:11:44.407061227 +0300 MSK	deployedgrafana-11.3.5       	11.0.0     
+kube-prometheus	monitoring	1       	2024-06-23 13:11:37.169970917 +0300 MSK	deployedkube-prometheus-9.5.2	0.74.0     
+```
+create service
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-metric
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  selector:
+    app: nginx
+  ports:
+    - name: nginx
+      port: 80
+      targetPort: 80
+    - name: metrics
+      port: 9113
+      targetPort: 9113
+
+kubectl get svc
+NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)           AGE
+kubernetes       ClusterIP   10.96.0.1      <none>        443/TCP           9h
+service-metric   ClusterIP   10.109.27.36   <none>        80/TCP,9113/TCP   7h38m
+```
+- create service monitor
+```
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: service-monitor
+  labels:
+    app: nginx-service-monitor
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  endpoints:
+    - port: metrics
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - default
+...
+kubectl get servicemonitor
+
+NAME              AGE
+service-monitor   7h41m
+```
+create configmap for nginx
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginxconf
+  creationTimestamp: null
+data:
+ default.conf: |
+    server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    location = /basic_status {
+    stub_status;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    }
+   ```
+check
+```
+root@control:/home/vagrant# curl http://10.244.171.115/basic_status
+Active connections: 1 
+server accepts handled requests
+ 159 159 159 
+Reading: 0 Writing: 1 Waiting: 0 
+``
+curl http://10.109.27.36:9113/metrics
+
+# HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
+# TYPE go_gc_duration_seconds summary
+go_gc_duration_seconds{quantile="0"} 3.8425e-05
+go_gc_duration_seconds{quantile="0.25"} 0.000159387
+go_gc_duration_seconds{quantile="0.5"} 0.000285061
+go_gc_duration_seconds{quantile="0.75"} 0.000405764
+go_gc_duration_seconds{quantile="1"} 0.000710465
+go_gc_duration_seconds_sum 0.007525263
+go_gc_duration_seconds_count 25
+# HELP go_goroutines Number of goroutines that currently exist.
+# TYPE go_goroutines gauge
+go_goroutines 14
+# HELP go_info Information about the Go environment.
+# TYPE go_info gauge
+go_info{version="go1.21.5"} 1
+# HELP go_memstats_alloc_bytes Number of bytes allocated and still in use.
+# TYPE go_memstats_alloc_bytes gauge
+go_memstats_alloc_bytes 2.302176e+06
+# HELP go_memstats_alloc_bytes_total Total number of bytes allocated, even if freed.
+# TYPE go_memstats_alloc_bytes_total counter
+go_memstats_alloc_bytes_total 2.0265176e+07
+# HELP go_memstats_buck_hash_sys_bytes Number of bytes used by the profiling bucket hash table.
+# TYPE go_memstats_buck_hash_sys_bytes gauge
+go_memstats_buck_hash_sys_bytes 4625
+# HELP go_memstats_frees_total Total number of frees.
+# TYPE go_memstats_frees_total counter
+go_memstats_frees_total 104518
+```
+port forward grafana and prometheus
+```
+kubectl port-forward svc/grafana --address 0.0.0.0 3000:3000 -n monitoring
+
+Forwarding from 0.0.0.0:3000 -> 3000
+
+kubectl port-forward svc/kube-prometheus-prometheus  --address 0.0.0.0 9090:9090 -n monitoring
+
+Forwarding from 0.0.0.0:9090 -> 9090
+```
+![image](https://github.com/Kuber-2023-12OTUS/tulamelkii_repo/assets/130311206/be6f6cf6-d848-4a62-a928-066a6a0cba64)
+
+![image](https://github.com/Kuber-2023-12OTUS/tulamelkii_repo/assets/130311206/1e3a5f98-5c38-404a-847a-54ed6a845435)
+
+=======
+```
+kubectl get ingress -n homework
+NAME                CLASS   HOSTS           ADDRESS        PORTS   AGE
+ingress-helm-metr   nginx   homework.otus   192.168.49.2   80      10m
+kubectl get svc -n homework
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+helm-memcached       ClusterIP   10.98.251.110   <none>        11211/TCP   10m
+service-nginx-metr   ClusterIP   10.108.205.80   <none>        80/TCP      10m
+```
+ - curl http://homework.otus/metrics
+```
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.001"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.01"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="0.1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="1"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="10"} 315
+workqueue_work_duration_seconds_bucket{name="APIServiceRegistrationController",le="+Inf"} 315
+workqueue_work_duration_seconds_sum{name="APIServiceRegistrationController"} 0.0020561219999999996
+workqueue_work_duration_seconds_count{name="APIServiceRegistrationController"} 315
+workqueue_work_duration_seconds_bucket{name="AvailableConditionController",le="1e-08"} 0
+```
+create helmfile
+```
+cat helmfile.yaml 
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+helmDefaults:
+  createNamespace: True
+  timeout: 800
+  wait: True
+
+releases: 
+  - name: kafka
+    chart: bitnami/kafka
+    namespace: prod
+    set:
+      - name: replicaCount
+        value: 1
+      - name: image.tag
+        value: "3.5.2"
+      - name: client.protocol
+        value: "SASL_PLAINTEXT"
+      - name: interbroker.protocol
+        value: "SASL_PLAINTEXT"
+  - name: dev
+    namespace: dev
+    chart: bitnami/kafka
+    set:
+      - name: image.tag
+        value: "latest"
+      - name: broker.replicaCount
+        value: 1
+      - name: listeners.client.protocol
+        value: "PLAINTEXT"
+      - name: listeners.interbroker.protocol
+        value: "PLAINTEXT"
+```
+check ns
+```
+kubectl get ns dev
+NAME   STATUS   AGE
+dev    Active   11m
+
+kubectl get ns prod
+NAME   STATUS   AGE
+prod   Active   11m
+``
+kubectl get pods -n dev
+NAME                     READY   STATUS    RESTARTS   AGE
+dev-kafka-broker-0       1/1     Running   0          12m
+dev-kafka-controller-0   1/1     Running   0          12m
+dev-kafka-controller-1   1/1     Running   0          12m
+dev-kafka-controller-2   1/1     Running   0          12
