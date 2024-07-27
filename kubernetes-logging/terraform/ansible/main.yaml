@@ -11,7 +11,7 @@
     - kub_kubeadm_kubctl
     - cri-o
 - name: control plane
-  hosts: master
+  hosts: control
   become: yes
   roles:
     - init_control
